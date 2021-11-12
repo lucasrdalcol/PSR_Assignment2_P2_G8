@@ -24,73 +24,92 @@ from colorama import Fore, Back, Style
 # PSR, University of Aveiro, November 2021.
 # ---------------------------------------------------
 
-# ---------------------------------------------------
-# Global Variables
-# ---------------------------------------------------
-min_B = 0
-max_B = 255
-min_G = 0
-max_G = 255
-min_R = 0
-max_R = 255
+# # ---------------------------------------------------
+# # Global Variables
+# # ---------------------------------------------------
+# min_B = 0
+# max_B = 255
+# min_G = 0
+# max_G = 255
+# min_R = 0
+# max_R = 255
+#
+#
+# # ----------------------------------------------------
+# # Function Definition
+# # ----------------------------------------------------
+# # Define functions of trackbars
+# def minOnTrackbarBChannel(threshold):
+#     """
+#     Trackbar for the minimum threshold for the Blue (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global min_B
+#     min_B = threshold
+#
+#
+# def maxOnTrackbarBChannel(threshold):
+#     """
+#     Trackbar for the maximum threshold for the Blue (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global max_B
+#     max_B = threshold
+#
+#
+# def minOnTrackbarGChannel(threshold):
+#     """
+#     Trackbar for the minimum threshold for the Green (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global min_G
+#     min_G = threshold
+#
+#
+# def maxOnTrackbarGChannel(threshold):
+#     """
+#     Trackbar for the maximum threshold for the Green (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global max_G
+#     max_G = threshold
+#
+#
+# def minOnTrackbarRChannel(threshold):
+#     """
+#     Trackbar for the minimum threshold for the Red (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global min_R
+#     min_R = threshold
+#
+#
+# def maxOnTrackbarRChannel(threshold):
+#     """
+#     Trackbar for the maximum threshold for the Red (RGB) channel
+#     :param threshold: the threshold for the channel in question. Datatype: int
+#     """
+#     global max_R
+#     max_R = threshold
 
-# ----------------------------------------------------
-# Function Definition
-# ----------------------------------------------------
-# Define functions of trackbars
-def minOnTrackbarBChannel(threshold):
-    """
-    Trackbar for the minimum threshold for the Blue (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global min_B
-    min_B = threshold
+def onTrackBar(window_name):
+    # Get ranges for each channel from trackbar and assign to a dictionary
+    min_B = cv2.getTrackbarPos('min B', window_name)
+    max_B = cv2.getTrackbarPos('max B', window_name)
+    min_G = cv2.getTrackbarPos('min G', window_name)
+    max_G = cv2.getTrackbarPos('max G', window_name)
+    min_R = cv2.getTrackbarPos('min R', window_name)
+    max_R = cv2.getTrackbarPos('max R', window_name)
 
+    limits = {'B': {'min': min_B, 'max': max_B},
+              'G': {'min': min_G, 'max': max_G},
+              'R': {'min': min_R, 'max': max_R}}
 
-def maxOnTrackbarBChannel(threshold):
-    """
-    Trackbar for the maximum threshold for the Blue (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global max_B
-    max_B = threshold
+    # Convert the dict structure created before to numpy arrays, because is the structure that opencv uses it.
+    mins = np.array([limits['B']['min'], limits['G']['min'], limits['R']['min']])
+    maxs = np.array([limits['B']['max'], limits['G']['max'], limits['R']['max']])
 
-
-def minOnTrackbarGChannel(threshold):
-    """
-    Trackbar for the minimum threshold for the Green (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global min_G
-    min_G = threshold
-
-
-def maxOnTrackbarGChannel(threshold):
-    """
-    Trackbar for the maximum threshold for the Green (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global max_G
-    max_G = threshold
-
-
-def minOnTrackbarRChannel(threshold):
-    """
-    Trackbar for the minimum threshold for the Red (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global min_R
-    min_R = threshold
-
-
-def maxOnTrackbarRChannel(threshold):
-    """
-    Trackbar for the maximum threshold for the Red (RGB) channel
-    :param threshold: the threshold for the channel in question. Datatype: int
-    """
-    global max_R
-    max_R = threshold
-
+    return limits, mins, maxs
 
 def main():
     # ---------------------------------------------------
@@ -105,13 +124,25 @@ def main():
     window_name_2 = 'Segmented image'
     cv2.namedWindow(window_name_2, cv2.WINDOW_NORMAL)
 
+    # # Option A:
+    # # Create trackbars to control the threshold of the binarization
+    # cv2.createTrackbar('min B', window_name_2, 0, 255, minOnTrackbarBChannel)
+    # cv2.createTrackbar('max B', window_name_2, 0, 255, maxOnTrackbarBChannel)
+    # cv2.createTrackbar('min G', window_name_2, 0, 255, minOnTrackbarGChannel)
+    # cv2.createTrackbar('max G', window_name_2, 0, 255, maxOnTrackbarGChannel)
+    # cv2.createTrackbar('min R', window_name_2, 0, 255, minOnTrackbarRChannel)
+    # cv2.createTrackbar('max R', window_name_2, 0, 255, maxOnTrackbarRChannel)
+
+    # Option A optimized:
+    onTrackBar_partial = partial(onTrackBar, window_name=window_name_2)
+
     # Create trackbars to control the threshold of the binarization
-    cv2.createTrackbar('min B', window_name_2, 0, 255, minOnTrackbarBChannel)
-    cv2.createTrackbar('max B', window_name_2, 0, 255, maxOnTrackbarBChannel)
-    cv2.createTrackbar('min G', window_name_2, 0, 255, minOnTrackbarGChannel)
-    cv2.createTrackbar('max G', window_name_2, 0, 255, maxOnTrackbarGChannel)
-    cv2.createTrackbar('min R', window_name_2, 0, 255, minOnTrackbarRChannel)
-    cv2.createTrackbar('max R', window_name_2, 0, 255, maxOnTrackbarRChannel)
+    cv2.createTrackbar('min B', window_name_2, 0, 255, onTrackBar_partial)
+    cv2.createTrackbar('max B', window_name_2, 0, 255, onTrackBar_partial)
+    cv2.createTrackbar('min G', window_name_2, 0, 255, onTrackBar_partial)
+    cv2.createTrackbar('max G', window_name_2, 0, 255, onTrackBar_partial)
+    cv2.createTrackbar('min R', window_name_2, 0, 255, onTrackBar_partial)
+    cv2.createTrackbar('max R', window_name_2, 0, 255, onTrackBar_partial)
 
     # Set the trackbar position to 255 for maximum trackbars
     cv2.setTrackbarPos('max B', window_name_2, 255)
@@ -132,14 +163,16 @@ def main():
         _, frame = capture.read()
         cv2.imshow(window_name_1, frame)
 
-        # Get ranges for each channel from trackbar
-        limits = {'B': {'min': min_B, 'max': max_B},
-                  'G': {'min': min_G, 'max': max_G},
-                  'R': {'min': min_R, 'max': max_R}}
+        # # Get ranges for each channel from trackbar
+        # limits = {'B': {'min': min_B, 'max': max_B},
+        #           'G': {'min': min_G, 'max': max_G},
+        #           'R': {'min': min_R, 'max': max_R}}
+        #
+        # # Convert the dict structure created before to numpy arrays, because is the structure that opencv uses it.
+        # mins = np.array([limits['B']['min'], limits['G']['min'], limits['R']['min']])
+        # maxs = np.array([limits['B']['max'], limits['G']['max'], limits['R']['max']])
 
-        # Convert the dict structure created before to numpy arrays, because is the structure that opencv uses it.
-        mins = np.array([limits['B']['min'], limits['G']['min'], limits['R']['min']])
-        maxs = np.array([limits['B']['max'], limits['G']['max'], limits['R']['max']])
+        limits, mins, maxs = onTrackBar_partial()
 
         # Create mask using cv2.inRange. The output is still in uint8
         segmented = cv2.inRange(frame, mins, maxs)
