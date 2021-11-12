@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # --------------------------------------------------
-# IMPORT MODULES
+# Import Modules
 # --------------------------------------------------
 import argparse
 import os
@@ -23,18 +23,19 @@ install_extras(['python'])
 set_default_style('light')
 
 
-# --------------------------------------------------
-# Script of a typing test - Assignment 1. Examples of similar softwares here: https://www.typingtest.com/
-#                                                                             https://www.youtube.com/watch?v=6tRTOd5vPH8
+# ---------------------------------------------------
+# Script of a Augmented Reality Paint - Assignment 2 - PSR. Example of similar software here:
+# https://www.youtube.com/watch?v=ud119RI_Rpg
+#
 #
 # Contributors:
 #   - Lucas Rodrigues Dal'Col
-#   - Vinícius Campos de Oliveira Batista
-#   - José Pedro Moura Costa Pinto
-#   - Rodrigo Dinis Martins Ferreira
+#   - Manuel Alberto Silva Gomes
+#   - Emanuel Krzyszton
+#   - João Pedro Tira Picos Costa Nunes
 #
 # PSR, University of Aveiro, November 2021.
-# --------------------------------------------------
+# ---------------------------------------------------
 
 
 def main():
