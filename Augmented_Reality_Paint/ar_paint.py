@@ -45,34 +45,33 @@ def main():
     # ---------------------------------------------------
     # Initialization
     # ---------------------------------------------------
-    #--------------------------------------------------
-    # Create parser
-    # --------------------------------------------------
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument('-j', '--json', required=True, help="Definition of test mode")
-    # args = vars(ap.parse_args())
 
-    # --------------------------------------------------
+    # Create argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-j', '--json', required=True, help="Definition of test mode")
+    args = vars(ap.parse_args())
+
+    # Opening JSON file
+    f = open(args['json'])
+
+    # returns JSON object as a dictionary
+    limits = json.load(f)
+
     # Setting up the painting interface. White blank image.
-    # --------------------------------------------------
     blank_image = 255 * np.ones(shape=[480, 640], dtype=np.uint8)
     cv2.imshow("White Blank", blank_image)
 
-    # --------------------------------------------------
-    # Video capture
-    # --------------------------------------------------
+    # Setting up the video capture
     video_capture = cv2.VideoCapture(0)
 
-    # Created dummy variable to test, delete when JSON files are loaded
-    dummy_dic = {'B': {'min': 0, 'max': 255},
-                 'G': {'min': 0, 'max': 255},
-                 'R': {'min': 0, 'max': 50}}
-
+    # ---------------------------------------------------
+    # Execution
+    # ---------------------------------------------------
     while True:
         ret, frame = video_capture.read()
 
         # Create mask
-        mask_original = createMask(dummy_dic, frame)
+        mask_original = createMask(limits, frame)
 
         # Find centroid
         mask, centroid = findCentroid(mask_original)
