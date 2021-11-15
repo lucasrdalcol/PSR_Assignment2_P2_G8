@@ -62,12 +62,32 @@ def main():
     # Video capture
     # --------------------------------------------------
     video_capture = cv2.VideoCapture(0)
+
+    # Created dummy variable to test, delete when JSON files are loaded
+    dummy_dic = {'B': {'min': 0, 'max': 255},
+                 'G': {'min': 0, 'max': 255},
+                 'R': {'min': 0, 'max': 50}}
+
     while True:
         ret, frame = video_capture.read()
-        cv2.imshow("Original: ", frame)
+
+        # Create mask
+        mask_original = createMask(dummy_dic, frame)
+
+        # Find centroid
+        mask, centroid = findCentroid(mask_original)
+
+        # Paint the original image green
+        frame = greenBlob(frame, mask)
+
+        # Show the webcam frame and the mask
+        cv2.imshow("Original", frame)
+        cv2.imshow("Mask", mask_original)
+
         # If you press q, the program shuts down and saves the final directory
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
     # When everything done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
