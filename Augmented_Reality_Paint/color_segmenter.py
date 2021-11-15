@@ -20,7 +20,7 @@ from my_functions import *
 # Contributors:
 #   - Lucas Rodrigues Dal'Col
 #   - Manuel Alberto Silva Gomes
-#   - Emanuel Krzyszton
+#   - Emanuel Krzysztoń
 #   - João Pedro Tira Picos Costa Nunes
 #
 # PSR, University of Aveiro, November 2021.

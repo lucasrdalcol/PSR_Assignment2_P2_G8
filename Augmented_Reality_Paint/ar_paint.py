@@ -34,7 +34,7 @@ set_default_style('light')
 # Contributors:
 #   - Lucas Rodrigues Dal'Col
 #   - Manuel Alberto Silva Gomes
-#   - Emanuel Krzyszton
+#   - Emanuel Krzysztoń
 #   - João Pedro Tira Picos Costa Nunes
 #
 # PSR, University of Aveiro, November 2021.
@@ -59,20 +59,20 @@ def main():
 
     # Setting up the video capture
     video_capture = cv2.VideoCapture(0)
+    ret, frame = video_capture.read()
+
+    # Setting up the painting interface. White blank image.
+    windowWidth = frame.shape[1]
+    windowHeight = frame.shape[0]
+
+    blank_image = 255 * np.ones(shape=[windowHeight, windowWidth], dtype=np.uint8)
+    cv2.imshow("White Blank", blank_image)
 
     # ---------------------------------------------------
     # Execution
     # ---------------------------------------------------
     while video_capture.isOpened():
         ret, frame = video_capture.read()
-
-        # Setting up the painting interface. White blank image.
-        windowWidth = frame.shape[1]
-        windowHeight = frame.shape[0]
-
-        blank_image = 255 * np.ones(shape=[windowHeight, windowWidth], dtype=np.uint8)
-        cv2.imshow("White Blank", blank_image)
-
         # Create mask
         mask_original = createMask(limits, frame)
 
