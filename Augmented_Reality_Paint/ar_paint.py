@@ -57,18 +57,21 @@ def main():
     # returns JSON object as a dictionary
     limits = json.load(f)
 
-    # Setting up the painting interface. White blank image.
-    blank_image = 255 * np.ones(shape=[480, 640], dtype=np.uint8)
-    cv2.imshow("White Blank", blank_image)
-
     # Setting up the video capture
     video_capture = cv2.VideoCapture(0)
 
     # ---------------------------------------------------
     # Execution
     # ---------------------------------------------------
-    while True:
+    while video_capture.isOpened():
         ret, frame = video_capture.read()
+
+        # Setting up the painting interface. White blank image.
+        windowWidth = frame.shape[1]
+        windowHeight = frame.shape[0]
+
+        blank_image = 255 * np.ones(shape=[windowHeight, windowWidth], dtype=np.uint8)
+        cv2.imshow("White Blank", blank_image)
 
         # Create mask
         mask_original = createMask(limits, frame)
@@ -90,11 +93,6 @@ def main():
     # When everything done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
-
-    # --------------------------------------------------
-    # Loading Json file
-    # --------------------------------------------------
-
 
 if __name__ == "__main__":
     main()
