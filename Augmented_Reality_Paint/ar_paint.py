@@ -5,7 +5,8 @@
 # --------------------------------------------------
 import argparse
 import numpy as np
-import cv2.cv2 as cv2
+# import cv2.cv2 as cv2
+import cv2
 import json
 import os
 import sys
@@ -22,6 +23,7 @@ from statistics import mean
 from prettyprinter import set_default_style
 from prettyprinter import install_extras
 from termcolor import colored, cprint
+
 install_extras(['python'])
 set_default_style('light')
 
@@ -65,14 +67,20 @@ def main():
     windowWidth = frame.shape[1]
     windowHeight = frame.shape[0]
 
-    blank_image = 255 * np.ones(shape=[windowHeight, windowWidth], dtype=np.uint8)
+    blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
     cv2.imshow("White Blank", blank_image)
+
+    radio = 5
+    color = (255, 0, 0)
+    color_str = 'BLUE'
+    center = (200, 200)
 
     # ---------------------------------------------------
     # Execution
     # ---------------------------------------------------
     while video_capture.isOpened():
         ret, frame = video_capture.read()
+        frame = cv2.flip(frame, 1)
         # Create mask
         mask_original = createMask(limits, frame)
 
@@ -82,17 +90,73 @@ def main():
         # Paint the original image green
         frame = greenBlob(frame, mask)
 
-        # Show the webcam frame and the mask
+        # Keyboard commands
+        choice = cv2.waitKey(1)
+
+        # if a key is pressed
+        if choice != -1:
+
+            # Choose the color blue if "b" is pressed.
+            if choice == ord('b'):
+                color = (255, 0, 0)
+                color_str = 'BLUE'
+                print(Fore.BLUE + color_str + ' color selected.' + Style.RESET_ALL)
+
+            # Choose the color green if "g" is pressed.
+            elif choice == ord('g'):
+                color = (0, 255, 0)
+                color_str = 'GREEN'
+                print(Fore.GREEN + color_str + ' color selected.' + Style.RESET_ALL)
+            # Choose the color red if "r" is pressed.
+            elif choice == ord('r'):
+                color = (0, 0, 255)
+                color_str = 'RED'
+                print(Fore.RED + color_str + ' color selected.' + Style.RESET_ALL)
+
+            # Increase the pencil size if "+" is pressed.
+            elif choice == ord('+'):
+                radio = radio + 1
+                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL)
+            # Decrease the pencil size if "-" is pressed.
+            elif choice == ord('-'):
+                radio = radio - 1
+                if radio <0:
+                    radio = 0
+                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL)
+
+            # Clear the window if "c" is pressed.
+            elif choice == ord('c'):
+                blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
+                print('You pressed "c": The window "White Blank" was cleared.')
+
+            # Save the current image if "w" is pressed.
+            elif choice == ord('w'):
+                date = ctime()
+                cv2.imwrite('drawing_' + date + '.png', blank_image)
+                print('Current image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
+
+        if centroid is None:
+            pass
+        else:
+            # Change the variable centroid to a tuple in center
+            center = (int(centroid[0]), int(centroid[1]))
+            # Paint a dot according to the inputs
+            cv2.circle(blank_image, center, radio, color, -1)
+
+        # Show the webcam frame, the mask and the image being painted
         cv2.imshow("Original", frame)
         cv2.imshow("Mask", mask_original)
+        cv2.imshow("White Blank", blank_image)
 
         # If you press q, the program shuts down and saves the final directory
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
             break
 
     # When everything done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
