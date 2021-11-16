@@ -74,6 +74,7 @@ def main():
     color = (255, 0, 0)
     color_str = 'BLUE'
     center = (200, 200)
+    print('You are painting with color ' + color_str + ' and pencil size ' + str(radio))
 
     # ---------------------------------------------------
     # Execution
@@ -148,8 +149,8 @@ def main():
         cv2.imshow("Mask", mask_original)
         cv2.imshow("White Blank", blank_image)
 
-        # If you press q, the program shuts down and saves the final directory
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # If you press q, the program shuts down
+        if choice & 0xFF == ord('q'):
             print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
             break
 
