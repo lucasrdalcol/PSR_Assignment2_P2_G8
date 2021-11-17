@@ -23,6 +23,7 @@ from statistics import mean
 from prettyprinter import set_default_style
 from prettyprinter import install_extras
 from termcolor import colored, cprint
+import math
 
 install_extras(['python'])
 set_default_style('light')
@@ -51,6 +52,8 @@ def main():
     # Create argparse
     ap = argparse.ArgumentParser()
     ap.add_argument('-j', '--json', required=True, help="Definition of test mode")
+    ap.add_argument('-usp', '--use_shake_prevention', action='store_true',
+                    help='Select this option to use shake prevention.')
     args = vars(ap.parse_args())
 
     # Opening JSON file
@@ -74,7 +77,13 @@ def main():
     color = (255, 0, 0)
     color_str = 'BLUE'
     center = (200, 200)
+    center_prev = (200, 200)
     print('You are painting with color ' + color_str + ' and pencil size ' + str(radio))
+    if args['use_shake_prevention']:  # if the user uses the shake prevention
+        print(Fore.BLUE + Back.WHITE + 'You are using shake prevention.' + Style.RESET_ALL)
+        shake_prevention_on = 1
+    else:
+        shake_prevention_on = 0
 
     # ---------------------------------------------------
     # Execution
@@ -121,7 +130,7 @@ def main():
             # Decrease the pencil size if "-" is pressed.
             elif choice == ord('-'):
                 radio = radio - 1
-                if radio <0:
+                if radio < 0:
                     radio = 0
                 print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL)
 
@@ -141,8 +150,24 @@ def main():
         else:
             # Change the variable centroid to a tuple in center
             center = (int(centroid[0]), int(centroid[1]))
-            # Paint a dot according to the inputs
-            cv2.circle(blank_image, center, radio, color, -1)
+            if radio == 0:
+                pass
+            else:
+                if shake_prevention_on:  # if the user uses the shake prevention
+                    # Calculate the distance between the centroid detected and the previous centroid detected
+                    distance = math.sqrt(((center[0] - center_prev[0]) ** 2) + ((center[1] - center_prev[1]) ** 2))
+
+                    if distance > 40:  # if the distance is bigger than a defined number, the program doesn't paint
+                        pass
+                    else:
+                        # Paint a line according to the inputs
+                        cv2.line(blank_image, center_prev, center, color, radio)
+
+                else:  # if the user doesn't use the shake prevention
+                    # Paint a line according to the inputs
+                    cv2.line(blank_image, center_prev, center, color, radio)
+
+                center_prev = center  # defining the center_prev to use in the next cycle
 
         # Show the webcam frame, the mask and the image being painted
         cv2.imshow("Original", frame)
