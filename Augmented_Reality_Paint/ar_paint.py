@@ -63,6 +63,9 @@ def main():
     video_capture = cv2.VideoCapture(0)
     ret, frame = video_capture.read()
 
+    # Setting up timer
+    start_time = tic()
+
     # Setting up the painting interface. White blank image.
     windowWidth = frame.shape[1]
     windowHeight = frame.shape[0]
@@ -70,6 +73,8 @@ def main():
     blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
     cv2.imshow("White Blank", blank_image)
 
+    # Setting up variables
+    toggle = False
     radio = 5
     color = (255, 0, 0)
     color_str = 'BLUE'
@@ -143,6 +148,12 @@ def main():
             center = (int(centroid[0]), int(centroid[1]))
             # Paint a dot according to the inputs
             cv2.circle(blank_image, center, radio, color, -1)
+
+        # Measure the time
+        toggle = periodDefinition(start_time, toggle, 5)
+        if toggle:
+            print('Now showing the real image')
+
 
         # Show the webcam frame, the mask and the image being painted
         cv2.imshow("Original", frame)

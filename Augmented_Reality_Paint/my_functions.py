@@ -190,3 +190,12 @@ def greenBlob(image, mask):
 
     return image
 
+
+def periodDefinition(start_time, toggle, seconds):
+
+    elapsed_time = toc(start_time)
+    print(round(elapsed_time % seconds, 1))
+    if round(elapsed_time % seconds, 1) == 0:
+        toggle = ~toggle
+        time.sleep(0.1)
+    return toggle
