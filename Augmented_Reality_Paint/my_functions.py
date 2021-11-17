@@ -192,10 +192,19 @@ def greenBlob(image, mask):
 
 
 def periodDefinition(start_time, toggle, seconds):
+    """
 
+    :param start_time:
+    :param toggle:
+    :param seconds:
+    :return:
+    """
+    # Measure elapsed time
     elapsed_time = toc(start_time)
-    print(round(elapsed_time % seconds, 1))
+
+    # If the elapsed time is divisible by the seconds variable, change the toggle variable
     if round(elapsed_time % seconds, 1) == 0:
         toggle = ~toggle
+        # After changing the toggle, wait for 0.1 seconds, to avoid false toggles
         time.sleep(0.1)
     return toggle
