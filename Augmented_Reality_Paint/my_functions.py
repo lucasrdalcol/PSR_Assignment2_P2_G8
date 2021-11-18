@@ -193,10 +193,10 @@ def greenBlob(image, mask):
 
 def periodDefinition(start_time, toggle, seconds):
     """
-
-    :param start_time:
-    :param toggle:
-    :param seconds:
+    Toggle a variable after x seconds and untoggle it after 2x seconds
+    :param start_time: Float32
+    :param toggle: Bool
+    :param seconds: Int
     :return:
     """
     # Measure elapsed time
@@ -208,3 +208,22 @@ def periodDefinition(start_time, toggle, seconds):
         # After changing the toggle, wait for 0.1 seconds, to avoid false toggles
         time.sleep(0.1)
     return toggle
+
+
+def createBlend(white_image, frame):
+    """
+    Blend the canvas with the real frame, placing the drawings on top of the real image
+    :param frame: Cv2 image - Uint8
+    :param white_image: Cv2 image - Uint8
+    :return frame: Cv2 image - Uint8
+    """
+    # Create mask of white pixels
+    mask = cv2.inRange(white_image, np.array([255, 255, 255]), np.array([255, 255, 255]))
+    mask = mask.astype(np.bool)
+
+    # Placing the drawing in the original frame
+    frame_cp = copy.deepcopy(frame)
+    frame_cp[~mask] = white_image[~mask]
+
+    return frame_cp
+

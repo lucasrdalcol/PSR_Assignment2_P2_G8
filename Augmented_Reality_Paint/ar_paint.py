@@ -84,13 +84,13 @@ def main():
     # Setting up timer
     start_time = tic()
 
-    # Setting up the painting interface. White blank image.
+    # Setting up the painting interface. Canvas image.
     windowWidth = frame.shape[1]
     windowHeight = frame.shape[0]
 
     blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
-    cv2.imshow("White Blank", blank_image)
-    cv2.setMouseCallback("White Blank", onMouse)
+    cv2.imshow("Canvas", blank_image)
+    cv2.setMouseCallback("Canvas", onMouse)
 
     # Setting up variables
     toggle = False
@@ -165,7 +165,7 @@ def main():
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
                 blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
-                print('You pressed "c": The window "White Blank" was cleared.')
+                print('You pressed "c": The window "Canvas" was cleared.')
 
             # Save the current image if "w" is pressed.
             elif choice == ord('w'):
@@ -215,14 +215,22 @@ def main():
 
         # Measure the time
         toggle = periodDefinition(start_time, toggle, 5)
+        # If we are in the period defined
         if toggle:
-            print('Now showing the real image')
+            # Replacing the white canvas with the real frame
+            blend_image = createBlend(blank_image, frame)
+            # Showing the blend image
+            cv2.imshow("Canvas", blend_image)
+        else:
+            # Showing the white canvas
+            cv2.imshow("Canvas", blank_image)
 
 
-        # Show the webcam frame, the mask and the image being painted
+
+        # Show the webcam frame and the mask
         cv2.imshow("Original", frame)
         cv2.imshow("Mask", mask_original)
-        cv2.imshow("White Blank", blank_image)
+
 
         # If you press q, the program shuts down
         if choice & 0xFF == ord('q'):
