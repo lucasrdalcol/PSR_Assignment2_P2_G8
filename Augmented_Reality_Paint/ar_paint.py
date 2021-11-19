@@ -130,13 +130,15 @@ def main():
     center_mouse = (200, 200)
     center_prev = (200, 200)
     center_prev_mouse = (200, 200)
-    print('You are painting with color ' + color_str + ' and pencil size ' + str(radio))
 
     if args['use_shake_prevention']:  # if the user uses the shake prevention
         print(Fore.BLUE + Back.WHITE + 'You are using shake prevention.' + Style.RESET_ALL)
         shake_prevention_on = 1
     else:
         shake_prevention_on = 0
+
+    print('You started your paint with color ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
+          str(radio) + Fore.RESET + ' as default parameters')
 
     # ---------------------------------------------------
     # Execution
@@ -163,29 +165,29 @@ def main():
             if choice == ord('b'):
                 color = (255, 0, 0)
                 color_str = 'BLUE'
-                print(Fore.BLUE + color_str + ' color selected.' + Style.RESET_ALL)
+                print(Fore.BLUE + color_str + ' color selected.        ' + Style.RESET_ALL, end='\r')
 
             # Choose the color green if "g" is pressed.
             elif choice == ord('g'):
                 color = (0, 255, 0)
                 color_str = 'GREEN'
-                print(Fore.GREEN + color_str + ' color selected.' + Style.RESET_ALL)
+                print(Fore.GREEN + color_str + ' color selected.          ' + Style.RESET_ALL, end='\r')
             # Choose the color red if "r" is pressed.
             elif choice == ord('r'):
                 color = (0, 0, 255)
                 color_str = 'RED'
-                print(Fore.RED + color_str + ' color selected.' + Style.RESET_ALL)
+                print(Fore.RED + color_str + ' color selected.            ' + Style.RESET_ALL, end='\r')
 
             # Increase the pencil size if "+" is pressed.
             elif choice == ord('+'):
                 radio = radio + 1
-                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL)
+                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '      ', end='\r')
             # Decrease the pencil size if "-" is pressed.
             elif choice == ord('-'):
                 radio = radio - 1
                 if radio < 0:
                     radio = 0
-                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL)
+                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '      ', end='\r')
 
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
@@ -259,13 +261,21 @@ def main():
 
             # If you press space bar, the program shuts down
             if choice & 0xFF == ord(' '):
-                print(Fore.RED + 'You pressed the space bar. Here it is your statistics' + Style.RESET_ALL)
-                m = mse(painted_image, blank_image)
-                s = ssim(painted_image, blank_image, multichannel=True)
+                print(Fore.BLUE + 'You pressed the space bar. Here it is your statistics:' + Style.RESET_ALL)
+                mean_square_error = mse(painted_image, blank_image)
+                similarity = ssim(painted_image, blank_image, multichannel=True)
 
-                print(
-                    'Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(
-                        round(s * 100, 2)) + ' %')
+                print('Mean Square Error: ' + str(round(mean_square_error, 2)) + ' , Structural Similarity: '
+                      + str(round(similarity * 100, 2)) + ' %')
+                if 0 <= similarity < 0.5:
+                    cprint('Your painting is not even 50% to the correct one. Keep practicing!'
+                            , color='white', on_color='on_red', attrs=['blink'])
+                elif 0.5 <= similarity < 0.75:
+                    cprint('You were good, but can be better.'
+                           , color='white', on_color='on_blue', attrs=['blink'])
+                elif 0.75 <= similarity <= 1.0:
+                    cprint('AWESOME, your painting is amazing'
+                           , color='white', on_color='on_green', attrs=['blink'])
 
                 compareImages(painted_image, blank_image)
 
