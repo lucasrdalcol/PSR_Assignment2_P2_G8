@@ -45,7 +45,6 @@ set_default_style('light')
 # ---------------------------------------------------
 
 def onMouse(event, x, y, flags, param):
-
     global isdown
     global center_mouse
 
@@ -60,10 +59,13 @@ def onMouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONUP:
         isdown = False
 
+
 def main():
     # ---------------------------------------------------
     # Initialization
     # ---------------------------------------------------
+    # Starting global variables
+    global numeric_paint_blank_image, painted_image, isdown, center_mouse
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -89,55 +91,36 @@ def main():
     # Setting up the painting interface. Canvas image.
     window_width = frame.shape[1]
     window_height = frame.shape[0]
-
     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
 
+    cprint('Welcome to our Augmented Reality Paint! ENJOY!'
+           , color='white', on_color='on_green', attrs=['blink'])
+
+    print("\n\nContributors: \n- Lucas Rodrigues Dal'Col \n- Manuel Alberto Silva Gomes"
+          " \n- Emanuel Krzysztoń \n- João Pedro Tira Picos Costa Nunes \n\nPSR, University of Aveiro, "
+          "November 2021.\n")
+
     if args['use_numeric_paint']:
-        print('Welcome to numeric paint mode!')
+        cprint('You chose numeric paint mode!'
+               , color='white', on_color='on_blue', attrs=['blink'])
 
-        # TODO improve the regions division, to have a random division
-        # Divide white canvas in four regions for now
-        cv2.line(blank_image, (int(window_width/2), 0), (int(window_width/2), window_height), (0, 0, 0))
-        cv2.line(blank_image, (0, int(window_height/2)), (window_width, int(window_height/2)), (0, 0, 0))
-
-        # Find the centroids of the regions to draw the color number
-        centroids_coordinates, bounding_boxes, labeled_image = findConnectedRegions(blank_image)
-
-        # Start variables
-        region_colors = {}
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
-
-        # Draw region color idx
-        for centroids_coordinates_key, centroid_coordinates_value in centroids_coordinates.items():
-            random_idx = randint(1,4)
-            region_colors[centroids_coordinates_key] = {}
-            region_colors[centroids_coordinates_key]['color_idx'] = random_idx
-            region_colors[centroids_coordinates_key]['color'] = colors[random_idx - 1]
-            blank_image = cv2.putText(blank_image, str(random_idx), (int(centroid_coordinates_value[0]),
-                                                                       int(centroid_coordinates_value[1])),
-                                      cv2.FONT_HERSHEY_SIMPLEX,1, (0, 0, 0), 1, cv2.LINE_AA)
-
-        # Paint image to have the corrected image. After use this painted image to compare with our painting.
-        painted_image = copy.deepcopy(blank_image)
-        for region_color_key, region_color_value in region_colors.items():
-            mask = labeled_image == region_color_key
-            painted_image[mask] = region_color_value['color']
+        blank_image, painted_image = drawNumericPaintImage(blank_image=blank_image)
+        numeric_paint_blank_image = copy.deepcopy(blank_image)
 
         # print to the user which color should he print in it index
-        print('Color index 1 corresponds to blue color.')
-        print('Color index 2 corresponds to green color.')
-        print('Color index 3 corresponds to red color.')
-        print('Press the space bar to evaluate your painting...')
+        print('\nColor index 1 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
+        print('Color index 2 corresponds to ' + Fore.GREEN + 'green ' + Fore.RESET + 'color.')
+        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
+        print("\nYou can also check the 'Painted image' to see how it should be like")
+        print('Press the space bar to finish and evaluate your painting...\n')
 
-        cv2.imshow('painted image', painted_image)
+        cv2.imshow('Painted image', painted_image)
 
     cv2.imshow("Canvas", blank_image)
     cv2.setMouseCallback("Canvas", onMouse)
 
     # Setting up variables
     toggle = False
-    global isdown
-    global center_mouse
     isdown = False
     radio = 5
     # global color
@@ -206,7 +189,10 @@ def main():
 
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
-                blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
+                if not args['use_numeric_paint']:
+                    blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
+                else:
+                    blank_image = numeric_paint_blank_image
                 print('You pressed "c": The window "Canvas" was cleared.')
 
             # Save the current image if "w" is pressed.
@@ -215,14 +201,14 @@ def main():
                 cv2.imwrite('drawing_' + date + '.png', blank_image)
                 print('Current image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
 
-        if radio == 0:          # if the thickness of the line is zero the program doesn't draw
+        if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
         else:
-            if isdown:          # Code for when the user is pressing the mouse
+            if isdown:  # Code for when the user is pressing the mouse
                 if shake_prevention_on:  # if the user uses the shake prevention
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
-                                (center_mouse[1] - center_prev_mouse[1]) ** 2))
+                            (center_mouse[1] - center_prev_mouse[1]) ** 2))
                     if distance_mouse > 40:
                         center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
                     else:
@@ -232,8 +218,8 @@ def main():
                 else:
                     # Paint a line according to the inputs
                     cv2.line(blank_image, center_prev_mouse, center_mouse, color, radio)
-                    center_prev_mouse = center_mouse    # defining the center_prev to use in the next cycle
-            else:               # Code for when the user is not pressing the mouse
+                    center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
+            else:  # Code for when the user is not pressing the mouse
                 if centroid is None:
                     pass
                 else:
@@ -271,26 +257,29 @@ def main():
             # Showing the white canvas
             cv2.imshow("Canvas", blank_image)
 
+            # If you press space bar, the program shuts down
+            if choice & 0xFF == ord(' '):
+                print(Fore.RED + 'You pressed the space bar. Here it is your statistics' + Style.RESET_ALL)
+                m = mse(painted_image, blank_image)
+                s = ssim(painted_image, blank_image, multichannel=True)
+
+                print(
+                    'Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(
+                        round(s * 100, 2)) + ' %')
+
+                compareImages(painted_image, blank_image)
+
+                cv2.waitKey(0)
+
+                break
 
         # Show the webcam frame and the mask
         cv2.imshow("Original", frame)
         cv2.imshow("Mask", mask_original)
 
-
         # If you press q, the program shuts down
         if choice & 0xFF == ord('q'):
             print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
-            break
-
-        # If you press space bar, the program shuts down
-        if choice & 0xFF == ord(' '):
-            print(Fore.RED + 'You pressed the space bar. Here it is your statistics' + Style.RESET_ALL)
-            m = mse(painted_image, blank_image)
-            s = ssim(painted_image, blank_image, multichannel=True)
-
-            print('Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(round(s*100, 2)) + ' %')
-            cv2.waitKey(0)
-
             break
 
     # ---------------------------------------------------
