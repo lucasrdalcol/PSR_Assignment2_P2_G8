@@ -4,6 +4,8 @@
 # Import Modules
 # --------------------------------------------------
 import argparse
+import copy
+
 import numpy as np
 # import cv2.cv2 as cv2
 import cv2
@@ -66,16 +68,17 @@ def main():
 
     # Create argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument('-j', '--json', required=True, help="Definition of test mode")
+    ap.add_argument('-j', '--json', required=True, help="Input json file path")
     ap.add_argument('-usp', '--use_shake_prevention', action='store_true',
                     help='Select this option to use shake prevention.')
+    ap.add_argument('-unp', '--use_numeric_paint', action='store_true',
+                    help='Select this option to use numeric paint.')
     args = vars(ap.parse_args())
 
     # Opening JSON file
-    f = open(args['json'])
-
-    # returns JSON object as a dictionary
-    limits = json.load(f)
+    with open(args['json']) as file_handle:
+        # returns JSON object as a dictionary
+        limits = json.load(file_handle)
 
     # Setting up the video capture
     video_capture = cv2.VideoCapture(0)
@@ -85,11 +88,48 @@ def main():
     start_time = tic()
 
     # Setting up the painting interface. Canvas image.
-    windowWidth = frame.shape[1]
-    windowHeight = frame.shape[0]
+    window_width = frame.shape[1]
+    window_height = frame.shape[0]
 
-    blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
+    blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
+
+    if args['use_numeric_paint']:
+        print('Welcome to numeric paint mode!')
+
+        # Divide white canvas in four regions for now
+        cv2.line(blank_image, (int(window_width/2), 0), (int(window_width/2), window_height), (0, 0, 0))
+        cv2.line(blank_image, (0, int(window_height/2)), (window_width, int(window_height/2)), (0, 0, 0))
+
+        # Find the centroids of the regions to draw the color number
+        centroids_coordinates, bounding_boxes = findCentroidOfRegions(blank_image)
+
+        region_colors = {}
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+
+        for centroids_coordinates_key, centroid_coordinates_value in centroids_coordinates.items():
+            random_idx = randint(1,4)
+            region_colors[centroids_coordinates_key] = {}
+            region_colors[centroids_coordinates_key]['color_idx'] = random_idx
+            region_colors[centroids_coordinates_key]['color'] = colors[random_idx - 1]
+            blank_image = cv2.putText(blank_image, str(random_idx), (int(centroid_coordinates_value[0]),
+                                                                       int(centroid_coordinates_value[1])),
+                                      cv2.FONT_HERSHEY_SIMPLEX,1, (0, 0, 0), 1, cv2.LINE_AA)
+
+        painted_image = copy.deepcopy(blank_image)
+        for region_color_key, region_color_value in region_colors.items():
+            painted_image = cv2.rectangle(painted_image, (bounding_boxes[region_color_key][0],
+                                                          bounding_boxes[region_color_key][1]),
+                                          (bounding_boxes[region_color_key][0] + bounding_boxes[region_color_key][2]-1,
+                                           bounding_boxes[region_color_key][1] + bounding_boxes[region_color_key][3]-1),
+                                           region_color_value['color'], -1)
+
+        print('Color index 1 corresponds to blue color')
+        print('Color index 2 corresponds to green color')
+        print('Color index 3 corresponds to red color')
+
+    cv2.imshow('painted image', painted_image)
     cv2.imshow("Canvas", blank_image)
+    cv2.waitKey(0)
     cv2.setMouseCallback("Canvas", onMouse)
 
     # Setting up variables
@@ -164,7 +204,7 @@ def main():
 
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
-                blank_image = 255 * np.ones(shape=[windowHeight, windowWidth, 3], dtype=np.uint8)
+                blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
                 print('You pressed "c": The window "Canvas" was cleared.')
 
             # Save the current image if "w" is pressed.
@@ -213,18 +253,21 @@ def main():
                         cv2.line(blank_image, center_prev, center, color, radio)
                         center_prev = center  # defining the center_prev to use in the next cycle
 
-        # Measure the time
-        toggle = periodDefinition(start_time, toggle, 5)
-        # If we are in the period defined
-        if toggle:
-            # Replacing the white canvas with the real frame
-            blend_image = createBlend(blank_image, frame)
-            # Showing the blend image
-            cv2.imshow("Canvas", blend_image)
+        if not args['use_numeric_paint']:
+            # Measure the time
+            toggle = periodDefinition(start_time, toggle, 5)
+            # If we are in the period defined
+            if toggle:
+                # Replacing the white canvas with the real frame
+                blend_image = createBlend(blank_image, frame)
+                # Showing the blend image
+                cv2.imshow("Canvas", blend_image)
+            else:
+                # Showing the white canvas
+                cv2.imshow("Canvas", blank_image)
         else:
             # Showing the white canvas
             cv2.imshow("Canvas", blank_image)
-
 
 
         # Show the webcam frame and the mask
@@ -237,6 +280,9 @@ def main():
             print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
             break
 
+    # ---------------------------------------------------
+    # Terminating
+    # ---------------------------------------------------
     # When everything done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()

@@ -17,6 +17,11 @@ from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import Terminal256Formatter
 from pprint import pformat
+from skimage.io import imread, imshow
+from skimage.color import rgb2gray
+from skimage.morphology import (erosion, dilation, closing, opening,
+                                area_closing, area_opening)
+from skimage.measure import label, regionprops, regionprops_table
 
 
 # ------------------------
@@ -227,3 +232,82 @@ def createBlend(white_image, frame):
 
     return frame_cp
 
+def findCentroidOfRegions(mask_original):
+    """
+    Create a mask with the largest blob of mask_original and return its centroid coordinates
+    :param mask_original: Cv2 image - Uint8
+    :return mask: Cv2 image - Bool
+    :return centroid: List of 2 values
+    """
+
+    mask_original = cv2.cvtColor(mask_original, cv2.COLOR_BGR2GRAY)
+
+    # Threshold it so it becomes binary
+    ret, thresh = cv2.threshold(mask_original, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # You need to choose 4 or 8 for connectivity type
+    connectivity = 8
+
+    # Perform the operation
+    output = cv2.connectedComponentsWithStats(thresh, connectivity, cv2.CV_32S)
+
+    # Get the results
+    # The first cell is the number of labels
+    num_labels = output[0]
+
+    # The second cell is the label matrix
+    labels = output[1]
+
+    # The third cell is the stat matrix
+    stats = output[2]
+
+    # The fourth cell is the centroid matrix
+    centroids = output[3]
+
+    centroids_coordinates = {}
+    bounding_boxes = {}
+    # For each blob, find the centroids
+    for label in range(1, num_labels):
+        # Find centroid
+        centroids_coordinates[label] = centroids[label]
+        bounding_boxes[label] = stats[label, :-1]
+
+
+    return centroids_coordinates, bounding_boxes
+
+def masksAndBBoxOfRegions(mask_original):
+    """
+    Create a mask with the largest blob of mask_original and return its centroid coordinates
+    :param mask_original: Cv2 image - Uint8
+    :return mask: Cv2 image - Bool
+    :return centroid: List of 2 values
+    """
+
+    mask_original = cv2.cvtColor(mask_original, cv2.COLOR_BGR2GRAY)
+
+    # Threshold it so it becomes binary
+    ret, thresh = cv2.threshold(mask_original, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    label_im = label(thresh)
+    regions = regionprops(label_im)
+
+    properties = ['area', 'convex_area', 'bbox_area', 'extent',
+    'mean_intensity', 'solidity', 'eccentricity',
+    'orientation']
+
+    masks = []
+    bbox = []
+    list_of_index = []
+    for num, x in enumerate(regions):
+        masks.append(regions[num].convex_image)
+        bbox.append(regions[num].bbox)
+        list_of_index.append(num)
+    count = len(masks)
+
+    # for box, mask in zip(bbox, masks):
+    #     red = painting[:, :, 0][box[0]:box[2], box[1]:box[3]] * mask
+    #     green = painting[:, :, 1][box[0]:box[2], box[1]:box[3]] * mask
+    #     blue = painting[:, :, 2][box[0]:box[2], box[1]:box[3]] * mask
+    #     image = np.dstack([red, green, blue])
+
+    return masks, bbox
