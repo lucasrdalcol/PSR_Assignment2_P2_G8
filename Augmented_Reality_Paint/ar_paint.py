@@ -195,13 +195,13 @@ def main():
                     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
                 else:
                     blank_image = numeric_paint_blank_image
-                print('You pressed "c": The window "Canvas" was cleared.')
+                print('\nYou pressed "c": The window "Canvas" was cleared.')
 
             # Save the current image if "w" is pressed.
             elif choice == ord('w'):
                 date = ctime()
                 cv2.imwrite('drawing_' + date + '.png', blank_image)
-                print('Current image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
+                print('\nCurrent image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
@@ -261,7 +261,7 @@ def main():
 
             # If you press space bar, the program shuts down
             if choice & 0xFF == ord(' '):
-                print(Fore.BLUE + 'You pressed the space bar. Here it is your statistics:' + Style.RESET_ALL)
+                print(Fore.BLUE + '\nYou pressed the space bar. Here it is your statistics:' + Style.RESET_ALL)
                 mean_square_error = mse(painted_image, blank_image)
                 similarity = ssim(painted_image, blank_image, multichannel=True)
 
@@ -289,7 +289,7 @@ def main():
 
         # If you press q, the program shuts down
         if choice & 0xFF == ord('q'):
-            print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
+            print(Fore.RED + '\nYou pressed "q". The program closed.' + Style.RESET_ALL)
             break
 
     # ---------------------------------------------------
