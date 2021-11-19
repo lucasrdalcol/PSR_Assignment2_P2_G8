@@ -22,6 +22,8 @@ from skimage.color import rgb2gray
 from skimage.morphology import (erosion, dilation, closing, opening,
                                 area_closing, area_opening)
 from skimage.measure import label, regionprops, regionprops_table
+from skimage.metrics import structural_similarity as ssim
+import matplotlib.pyplot as plt
 
 
 # ------------------------
@@ -232,7 +234,7 @@ def createBlend(white_image, frame):
 
     return frame_cp
 
-def findCentroidOfRegions(mask_original):
+def findConnectedRegions(mask_original):
     """
     Create a mask with the largest blob of mask_original and return its centroid coordinates
     :param mask_original: Cv2 image - Uint8
@@ -273,41 +275,40 @@ def findCentroidOfRegions(mask_original):
         bounding_boxes[label] = stats[label, :-1]
 
 
-    return centroids_coordinates, bounding_boxes
+    return centroids_coordinates, bounding_boxes, labels
 
-def masksAndBBoxOfRegions(mask_original):
-    """
-    Create a mask with the largest blob of mask_original and return its centroid coordinates
-    :param mask_original: Cv2 image - Uint8
-    :return mask: Cv2 image - Bool
-    :return centroid: List of 2 values
-    """
 
-    mask_original = cv2.cvtColor(mask_original, cv2.COLOR_BGR2GRAY)
+def mse(imageA, imageB):
+    # the 'Mean Squared Error' between the two images is the
+    # sum of the squared difference between the two images;
+    # NOTE: the two images must have the same dimension
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
 
-    # Threshold it so it becomes binary
-    ret, thresh = cv2.threshold(mask_original, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # return the MSE, the lower the error, the more "similar"
+    # the two images are
+    return err
 
-    label_im = label(thresh)
-    regions = regionprops(label_im)
 
-    properties = ['area', 'convex_area', 'bbox_area', 'extent',
-    'mean_intensity', 'solidity', 'eccentricity',
-    'orientation']
+def compareImages(imageA, imageB):
+	# compute the mean squared error and structural similarity
+	# index for the images
+	m = mse(imageA, imageB)
+	s = ssim(imageA, imageB, multichannel=True)
 
-    masks = []
-    bbox = []
-    list_of_index = []
-    for num, x in enumerate(regions):
-        masks.append(regions[num].convex_image)
-        bbox.append(regions[num].bbox)
-        list_of_index.append(num)
-    count = len(masks)
+	# setup the figure
+	fig = plt.figure('Original and correct numeric paint x yours numeric paint')
+	plt.suptitle('Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(round(s*100, 2)) + ' %')
 
-    # for box, mask in zip(bbox, masks):
-    #     red = painting[:, :, 0][box[0]:box[2], box[1]:box[3]] * mask
-    #     green = painting[:, :, 1][box[0]:box[2], box[1]:box[3]] * mask
-    #     blue = painting[:, :, 2][box[0]:box[2], box[1]:box[3]] * mask
-    #     image = np.dstack([red, green, blue])
+	# show first image
+	ax = fig.add_subplot(1, 2, 1)
+	plt.imshow(imageA, cmap = plt.cm.gray)
+	plt.axis("off")
 
-    return masks, bbox
+	# show the second image
+	ax = fig.add_subplot(1, 2, 2)
+	plt.imshow(imageB, cmap = plt.cm.gray)
+	plt.axis("off")
+
+	# show the images
+	plt.show()

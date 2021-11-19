@@ -5,9 +5,7 @@
 # --------------------------------------------------
 import argparse
 import copy
-
 import numpy as np
-# import cv2.cv2 as cv2
 import cv2
 import json
 import os
@@ -26,6 +24,7 @@ from prettyprinter import set_default_style
 from prettyprinter import install_extras
 from termcolor import colored, cprint
 import math
+from skimage.metrics import structural_similarity as ssim
 
 install_extras(['python'])
 set_default_style('light')
@@ -96,16 +95,19 @@ def main():
     if args['use_numeric_paint']:
         print('Welcome to numeric paint mode!')
 
+        # TODO improve the regions division, to have a random division
         # Divide white canvas in four regions for now
         cv2.line(blank_image, (int(window_width/2), 0), (int(window_width/2), window_height), (0, 0, 0))
         cv2.line(blank_image, (0, int(window_height/2)), (window_width, int(window_height/2)), (0, 0, 0))
 
         # Find the centroids of the regions to draw the color number
-        centroids_coordinates, bounding_boxes = findCentroidOfRegions(blank_image)
+        centroids_coordinates, bounding_boxes, labeled_image = findConnectedRegions(blank_image)
 
+        # Start variables
         region_colors = {}
         colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 
+        # Draw region color idx
         for centroids_coordinates_key, centroid_coordinates_value in centroids_coordinates.items():
             random_idx = randint(1,4)
             region_colors[centroids_coordinates_key] = {}
@@ -115,21 +117,21 @@ def main():
                                                                        int(centroid_coordinates_value[1])),
                                       cv2.FONT_HERSHEY_SIMPLEX,1, (0, 0, 0), 1, cv2.LINE_AA)
 
+        # Paint image to have the corrected image. After use this painted image to compare with our painting.
         painted_image = copy.deepcopy(blank_image)
         for region_color_key, region_color_value in region_colors.items():
-            painted_image = cv2.rectangle(painted_image, (bounding_boxes[region_color_key][0],
-                                                          bounding_boxes[region_color_key][1]),
-                                          (bounding_boxes[region_color_key][0] + bounding_boxes[region_color_key][2]-1,
-                                           bounding_boxes[region_color_key][1] + bounding_boxes[region_color_key][3]-1),
-                                           region_color_value['color'], -1)
+            mask = labeled_image == region_color_key
+            painted_image[mask] = region_color_value['color']
 
-        print('Color index 1 corresponds to blue color')
-        print('Color index 2 corresponds to green color')
-        print('Color index 3 corresponds to red color')
+        # print to the user which color should he print in it index
+        print('Color index 1 corresponds to blue color.')
+        print('Color index 2 corresponds to green color.')
+        print('Color index 3 corresponds to red color.')
+        print('Press the space bar to evaluate your painting...')
 
-    cv2.imshow('painted image', painted_image)
+        cv2.imshow('painted image', painted_image)
+
     cv2.imshow("Canvas", blank_image)
-    cv2.waitKey(0)
     cv2.setMouseCallback("Canvas", onMouse)
 
     # Setting up variables
@@ -278,6 +280,17 @@ def main():
         # If you press q, the program shuts down
         if choice & 0xFF == ord('q'):
             print(Fore.RED + 'You pressed "q". The program closed.' + Style.RESET_ALL)
+            break
+
+        # If you press space bar, the program shuts down
+        if choice & 0xFF == ord(' '):
+            print(Fore.RED + 'You pressed the space bar. Here it is your statistics' + Style.RESET_ALL)
+            m = mse(painted_image, blank_image)
+            s = ssim(painted_image, blank_image, multichannel=True)
+
+            print('Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(round(s*100, 2)) + ' %')
+            cv2.waitKey(0)
+
             break
 
     # ---------------------------------------------------
