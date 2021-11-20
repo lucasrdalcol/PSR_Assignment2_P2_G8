@@ -28,6 +28,8 @@ from skimage.metrics import structural_similarity as ssim
 
 install_extras(['python'])
 set_default_style('light')
+draw = False
+
 
 
 # ---------------------------------------------------
