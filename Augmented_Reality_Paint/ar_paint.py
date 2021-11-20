@@ -124,6 +124,7 @@ def main():
     # Setting up variables
     toggle = False
     isdown = False
+    mouse_painting = True
     radio = 5
     # global color
     color = (255, 0, 0)
@@ -140,7 +141,7 @@ def main():
         shake_prevention_on = 0
 
     print('You started your paint with color ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
-          str(radio) + Fore.RESET + ' as default parameters')
+          str(radio) + Fore.RESET + ' as default parameters. \nYou are painting with the mouse. Press ' + Fore.RED + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL + ' to paint with the mouse again.')
 
     # ---------------------------------------------------
     # Execution
@@ -167,29 +168,41 @@ def main():
             if choice == ord('b'):
                 color = (255, 0, 0)
                 color_str = 'BLUE'
-                print(Fore.BLUE + color_str + ' color selected.        ' + Style.RESET_ALL, end='\r')
+                print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL, end='\r')
 
             # Choose the color green if "g" is pressed.
             elif choice == ord('g'):
                 color = (0, 255, 0)
                 color_str = 'GREEN'
-                print(Fore.GREEN + color_str + ' color selected.          ' + Style.RESET_ALL, end='\r')
+                print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL, end='\r')
+
             # Choose the color red if "r" is pressed.
             elif choice == ord('r'):
                 color = (0, 0, 255)
                 color_str = 'RED'
-                print(Fore.RED + color_str + ' color selected.            ' + Style.RESET_ALL, end='\r')
+                print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL, end='\r')
 
             # Increase the pencil size if "+" is pressed.
             elif choice == ord('+'):
                 radio = radio + 1
-                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '      ', end='\r')
+                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '                               ', end='\r')
+
             # Decrease the pencil size if "-" is pressed.
             elif choice == ord('-'):
                 radio = radio - 1
                 if radio < 0:
                     radio = 0
-                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '      ', end='\r')
+                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '                              ', end='\r')
+
+            # Paint with the mouse if "m" is pressed.
+            elif choice == ord('m'):
+                mouse_painting = True
+                print('You pressed "m". You are painting with the mouse.', end='\r')
+
+            # Paint with the mouse if "m" is pressed.
+            elif choice == ord('n'):
+                mouse_painting = False
+                print('You pressed "n".You are painting with the mask.', end='\r')
 
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
@@ -208,7 +221,7 @@ def main():
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
         else:
-            if isdown:  # Code for when the user is pressing the mouse
+            if mouse_painting:  # Code for when the user is pressing the mouse
                 if shake_prevention_on:  # if the user uses the shake prevention
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
