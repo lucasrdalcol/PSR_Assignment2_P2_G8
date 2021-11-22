@@ -122,7 +122,7 @@ def main():
     cv2.setMouseCallback("Canvas", onMouse)
 
     # Setting up variables
-    toggle = False
+    real_toggle = False
     isdown = False
     mouse_painting = True
     radio = 5
@@ -141,7 +141,7 @@ def main():
         shake_prevention_on = 0
 
     print('You started your paint with color ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
-          str(radio) + Fore.RESET + ' as default parameters. \nYou are painting with the mouse. Press ' + Fore.RED + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL + ' to paint with the mouse again.')
+          str(radio) + Fore.RESET + ' as default parameters. \nYou started painting with the mouse. \nPress ' + Fore.RED + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL + ' to paint with the mouse again.\nPress ' + Fore.RED + '"v"' + Style.RESET_ALL + ' to toggle between the white canvas and the real frame.')
 
     # ---------------------------------------------------
     # Execution
@@ -197,12 +197,20 @@ def main():
             # Paint with the mouse if "m" is pressed.
             elif choice == ord('m'):
                 mouse_painting = True
-                print('You pressed "m". You are painting with the mouse.', end='\r')
+                print('You pressed "m". You are painting with the mouse.             ', end='\r')
 
-            # Paint with the mouse if "m" is pressed.
+            # Paint with the mask if "n" is pressed.
             elif choice == ord('n'):
                 mouse_painting = False
-                print('You pressed "n".You are painting with the mask.', end='\r')
+                print('You pressed "n".You are painting with the mask.                ', end='\r')
+
+            # Toggle a variable to show the real image if "v" is pressed.
+            if choice == ord('v'):
+                real_toggle = ~ real_toggle
+                if real_toggle:
+                    print('You pressed "v". You are seeing the real frame.                ', end='\r')
+                else:
+                    print('You pressed "v". You are seeing the white canvas.               ', end='\r')
 
             # Clear the window if "c" is pressed.
             elif choice == ord('c'):
@@ -258,22 +266,7 @@ def main():
                         cv2.line(blank_image, center_prev, center, color, radio)
                         center_prev = center  # defining the center_prev to use in the next cycle
 
-        if not args['use_numeric_paint']:
-            # Measure the time
-            toggle = periodDefinition(start_time, toggle, 5)
-            # If we are in the period defined
-            if toggle:
-                # Replacing the white canvas with the real frame
-                blend_image = createBlend(blank_image, frame)
-                # Showing the blend image
-                cv2.imshow("Canvas", blend_image)
-            else:
-                # Showing the white canvas
-                cv2.imshow("Canvas", blank_image)
-        else:
-            # Showing the white canvas
-            cv2.imshow("Canvas", blank_image)
-
+        if args['use_numeric_paint']:
             # If you press space bar, the program shuts down
             if choice & 0xFF == ord(' '):
                 print(Fore.BLUE + '\nYou pressed the space bar. Here it is your statistics:' + Style.RESET_ALL)
@@ -298,6 +291,15 @@ def main():
 
                 break
 
+        if real_toggle:
+            # Replacing the white canvas with the real frame
+            blend_image = createBlend(blank_image, frame)
+
+            # Shows the real frame
+            cv2.imshow("Canvas", blend_image)
+        else:
+            # Showing the white canvas
+            cv2.imshow("Canvas", blank_image)
         # Show the webcam frame and the mask
         cv2.imshow("Original", frame)
         cv2.imshow("Mask", mask_original)

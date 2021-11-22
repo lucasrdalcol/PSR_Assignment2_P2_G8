@@ -198,25 +198,6 @@ def greenBlob(image, mask):
     return image
 
 
-def periodDefinition(start_time, toggle, seconds):
-    """
-    Toggle a variable after x seconds and untoggle it after 2x seconds
-    :param start_time: Float32
-    :param toggle: Bool
-    :param seconds: Int
-    :return:
-    """
-    # Measure elapsed time
-    elapsed_time = toc(start_time)
-
-    # If the elapsed time is divisible by the seconds variable, change the toggle variable
-    if round(elapsed_time % seconds, 1) == 0:
-        toggle = ~toggle
-        # After changing the toggle, wait for 0.1 seconds, to avoid false toggles
-        time.sleep(0.1)
-    return toggle
-
-
 def createBlend(white_image, frame):
     """
     Blend the canvas with the real frame, placing the drawings on top of the real image
@@ -234,7 +215,6 @@ def createBlend(white_image, frame):
 
     return frame_cp
 
-
 def findConnectedRegions(mask_original):
     """
     Create a mask with the largest blob of mask_original and return its centroid coordinates
@@ -249,7 +229,7 @@ def findConnectedRegions(mask_original):
     ret, thresh = cv2.threshold(mask_original, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # You need to choose 4 or 8 for connectivity type
-    connectivity = 4
+    connectivity = 8
 
     # Perform the operation
     output = cv2.connectedComponentsWithStats(thresh, connectivity, cv2.CV_32S)
@@ -275,83 +255,41 @@ def findConnectedRegions(mask_original):
         centroids_coordinates[label] = centroids[label]
         bounding_boxes[label] = stats[label, :-1]
 
+
     return centroids_coordinates, bounding_boxes, labels
 
 
-def mse(image_a, image_b):
+def mse(imageA, imageB):
     # the 'Mean Squared Error' between the two images is the
     # sum of the squared difference between the two images;
     # NOTE: the two images must have the same dimension
-    err = np.sum((image_a.astype("float") - image_b.astype("float")) ** 2)
-    err /= float(image_a.shape[0] * image_a.shape[1])
+    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+    err /= float(imageA.shape[0] * imageA.shape[1])
 
     # return the MSE, the lower the error, the more "similar"
     # the two images are
     return err
 
 
-def compareImages(image_a, image_b):
-    # compute the mean squared error and structural similarity
-    # index for the images
+def compareImages(imageA, imageB):
+	# compute the mean squared error and structural similarity
+	# index for the images
+	m = mse(imageA, imageB)
+	s = ssim(imageA, imageB, multichannel=True)
 
-    m = mse(image_a, image_b)
-    s = ssim(image_a, image_b, multichannel=True)
+	# setup the figure
+	fig = plt.figure('Original and correct numeric paint x yours numeric paint')
+	plt.suptitle('Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(round(s*100, 2)) + ' %')
 
-    image_a = cv2.cvtColor(image_a, cv2.COLOR_BGR2RGB)
-    image_b = cv2.cvtColor(image_b, cv2.COLOR_BGR2RGB)
+	# show first image
+	ax = fig.add_subplot(1, 2, 1)
+	plt.imshow(imageA, cmap = plt.cm.gray)
+	plt.axis("off")
 
-    # setup the figure
-    fig = plt.figure('Original and correct numeric paint x yours numeric paint')
-    plt.suptitle(
-        'Mean Square Error: ' + str(round(m, 2)) + ' , Structural Similarity: ' + str(round(s * 100, 2)) + ' %')
+	# show the second image
+	ax = fig.add_subplot(1, 2, 2)
+	plt.imshow(imageB, cmap = plt.cm.gray)
+	plt.axis("off")
 
-    # show first image
-    ax = fig.add_subplot(1, 2, 1)
-    plt.imshow(image_a, cmap=plt.cm.gray)
-    plt.axis("off")
-
-    # show the second image
-    ax = fig.add_subplot(1, 2, 2)
-    plt.imshow(image_b, cmap=plt.cm.gray)
-    plt.axis("off")
-
-    # show the images
-    plt.show()
-
-def drawNumericPaintImage(blank_image):
-    # Create random lines in the blank image
-    down_tol = 0.2
-    up_tol = 0.8
-    pts = [[0, randint(int(down_tol * blank_image.shape[0]), int(up_tol * blank_image.shape[0]))],
-           [randint(int(down_tol * blank_image.shape[1]), int(blank_image.shape[1] / 2)),
-            randint(int(down_tol * blank_image.shape[0]), int(up_tol * blank_image.shape[0]))],
-           [randint(int(down_tol * blank_image.shape[1]), int(up_tol * blank_image.shape[1])), blank_image.shape[0]],
-           [blank_image.shape[1], randint(int(down_tol * blank_image.shape[0]), int(up_tol * blank_image.shape[0]))],
-           [randint(int(down_tol * blank_image.shape[1]), int(up_tol * blank_image.shape[1])), 0]]
-    pts = np.array(pts)
-    cv2.polylines(img=blank_image, pts=[pts], isClosed=True, color=(0, 0, 0), thickness=2)
-
-    # Find the centroids of the regions to draw the color number
-    centroids_coordinates, bounding_boxes, labeled_image = findConnectedRegions(blank_image)
-
-    # Start variables
-    region_colors = {}
-    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
-
-    # Draw region color idx
-    for centroids_coordinates_key, centroid_coordinates_value in centroids_coordinates.items():
-        random_idx = randint(1, 4)
-        region_colors[centroids_coordinates_key] = {}
-        region_colors[centroids_coordinates_key]['color_idx'] = random_idx
-        region_colors[centroids_coordinates_key]['color'] = colors[random_idx - 1]
-        blank_image = cv2.putText(blank_image, str(random_idx), (int(centroid_coordinates_value[0]),
-                                                                 int(centroid_coordinates_value[1])),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
-
-    # Paint image to have the corrected image. After use this painted image to compare with our painting.
-    painted_image = copy.deepcopy(blank_image)
-    for region_color_key, region_color_value in region_colors.items():
-        mask = labeled_image == region_color_key
-        painted_image[mask] = region_color_value['color']
-
-    return blank_image, painted_image
+	# show the images
+	plt.show()
