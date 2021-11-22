@@ -45,26 +45,34 @@ def draw_circle(event, x, y, flags, param):
 capture = cv2.VideoCapture(0)
 
 cv2.namedWindow("Frame")
-if choice != -1:
-    if choice == ord('r'):
-        cv2.setMouseCallback("Frame", mouse_drawing)
-    elif choice == ord('c'):
-        # Connects the mouse button to our callback function
-        cv2.setMouseCallback('Frame', draw_circle)
 
 while True:
     _, frame = capture.read()
-
-    if point1 and point2:
-        cv2.rectangle(frame, point1, point2, (0, 255, 0))
-    if ix and iy:
-        cv2.circle(frame,(ix,iy), radius, (0,0,255),1)
-
-    cv2.imshow("Frame", frame)
-
     key = cv2.waitKey(1)
     if key == 27:
         break
+    elif key == ord('r'):
+        cv2.setMouseCallback("Frame", mouse_drawing)
+        if point1 and point2:
+            cv2.rectangle(frame, point1, point2, (0, 255, 0))
+    elif key == ord('c'):
+        cv2.setMouseCallback('Frame', draw_circle)
+        if ix and iy:
+            cv2.circle(frame, (ix, iy), radius, (0, 0, 255), 1)
+
+
+    # if choice != -1:
+    #     if choice == ord('r'):
+    #         cv2.setMouseCallback("Frame", mouse_drawing)
+    #         if point1 and point2:
+    #             cv2.rectangle(frame, point1, point2, (0, 255, 0))
+    #     elif choice == ord('c'):
+    #         # Connects the mouse button to our callback function
+    #         cv2.setMouseCallback('Frame', draw_circle)
+    #         if ix and iy:
+    #             cv2.circle(frame, (ix, iy), radius, (0, 0, 255), 1)
+
+    cv2.imshow("Frame", frame)
 
 capture.release()
 cv2.destroyAllWindows()
