@@ -25,6 +25,7 @@ from prettyprinter import install_extras
 from termcolor import colored, cprint
 import math
 from skimage.metrics import structural_similarity as ssim
+from functools import partial
 
 install_extras(['python'])
 set_default_style('light')
@@ -57,6 +58,7 @@ def draw_rectangle(event, x, y, flags, params):
         if draw is False:
             draw = True
             point1 = (x, y)
+            point2 = (x, y)
             cache = copy.deepcopy(blank_image)
         else:
             draw = False
@@ -65,6 +67,10 @@ def draw_rectangle(event, x, y, flags, params):
         if draw is True:
             point2 = (x, y)
             blank_image = copy.deepcopy(cache)
+
+    elif event == cv2.EVENT_LBUTTONUP:
+        if draw is True:
+            point2 = (x, y)
 
 
 # Create a function based on a CV2 Event (Left button click)
@@ -77,7 +83,7 @@ def draw_circle(event, x, y, flags, param):
         ix, iy = x, y
 
     elif event == cv2.EVENT_MOUSEMOVE:
-        draw == True
+        draw = True
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius = int(math.sqrt(((ix - x) ** 2) + ((iy - y) ** 2)))
@@ -85,20 +91,49 @@ def draw_circle(event, x, y, flags, param):
         draw = False
 
 
-def onMouse(event, x, y, flags, param):
+def onMouse(event, x, y, flags, param, draw, rect, circle):
     global isdown
     global center_mouse
+    global cache
+    global blank_image
+    global drect
+    global point1, point2
 
     if event == cv2.EVENT_MOUSEMOVE:
-        if isdown:
-            center_mouse = (x, y)
+        if draw:
+            if isdown:
+                center_mouse = (x, y)
+        elif rect:
+            if drect is True:
+                point2 = (x, y)
+                blank_image = copy.deepcopy(cache)
+
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        isdown = True
-        center_mouse = (x, y)
+        if draw:
+            isdown = True
+            center_mouse = (x, y)
+        elif rect:
+            print('Left Button')
+            if drect is False:
+                drect = True
+                point1 = (x, y)
+                point2 = (x, y)
+                cache = copy.deepcopy(blank_image)
+            else:
+                drect = False
 
     if event == cv2.EVENT_LBUTTONUP:
-        isdown = False
+        if draw:
+            isdown = False
+        elif rect:
+            if drect is True:
+                point2 = (x, y)
+
+    if rect:
+        if point1 and point2:
+            print('Drawing')
+            cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
 
 
 def main():
@@ -106,7 +141,7 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_image, painted_image, isdown, center_mouse, video_capture, cache, blank_image
+    global numeric_paint_blank_image, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -134,7 +169,6 @@ def main():
     window_height = frame.shape[0]
     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
 
-    #
     cache = copy.deepcopy(blank_image)
 
     cprint('Welcome to our Augmented Reality Paint! ENJOY!'
@@ -160,10 +194,11 @@ def main():
 
         cv2.imshow('Painted image', painted_image)
 
-    cv2.imshow("Canvas", blank_image)
-    cv2.setMouseCallback("Canvas", onMouse)
+
 
     # Setting up variables
+    rect = False
+    drect = False
     real_toggle = False
     isdown = False
     mouse_painting = True
@@ -175,6 +210,12 @@ def main():
     center_mouse = (200, 200)
     center_prev = (200, 200)
     center_prev_mouse = (200, 200)
+
+
+
+    cv2.imshow("Canvas", blank_image)
+    # onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect)
+    # cv2.setMouseCallback("Canvas", onMouseDefault)
 
     if args['use_shake_prevention']:  # if the user uses the shake prevention
         print(Fore.BLUE + Back.WHITE + 'You are using shake prevention.' + Style.RESET_ALL)
@@ -204,82 +245,82 @@ def main():
         key = cv2.waitKey(1)
 
         # if a key is pressed
-        #if key != -1:
+        if key != -1:
 
-        # Choose the color blue if "b" is pressed.
-        if key == ord('b'):
-            color = (255, 0, 0)
-            color_str = 'BLUE'
-            print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL, end='\r')
+            # Choose the color blue if "b" is pressed.
+            if key == ord('b'):
+                color = (255, 0, 0)
+                color_str = 'BLUE'
+                print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL, end='\r')
 
-        # Choose the color green if "g" is pressed.
-        elif key == ord('g'):
-            color = (0, 255, 0)
-            color_str = 'GREEN'
-            print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL, end='\r')
+            # Choose the color green if "g" is pressed.
+            elif key == ord('g'):
+                color = (0, 255, 0)
+                color_str = 'GREEN'
+                print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL, end='\r')
 
-        # Choose the color red if "r" is pressed.
-        elif key == ord('r'):
-            color = (0, 0, 255)
-            color_str = 'RED'
-            print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL, end='\r')
+            # Choose the color red if "r" is pressed.
+            elif key == ord('r'):
+                color = (0, 0, 255)
+                color_str = 'RED'
+                print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL, end='\r')
 
-        # Increase the pencil size if "+" is pressed.
-        elif key == ord('+'):
-            radio = radio + 1
-            print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '                               ', end='\r')
+            # Increase the pencil size if "+" is pressed.
+            elif key == ord('+'):
+                radio = radio + 1
+                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '                               ', end='\r')
 
-        # Decrease the pencil size if "-" is pressed.
-        elif key == ord('-'):
-            radio = radio - 1
-            if radio < 0:
-                radio = 0
-            print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '                              ', end='\r')
+            # Decrease the pencil size if "-" is pressed.
+            elif key == ord('-'):
+                radio = radio - 1
+                if radio < 0:
+                    radio = 0
+                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '                              ', end='\r')
 
-        # Paint with the mouse if "m" is pressed.
-        elif key == ord('m'):
-            mouse_painting = True
-            print('You pressed "m". You are painting with the mouse.             ', end='\r')
+            # Paint with the mouse if "m" is pressed.
+            elif key == ord('m'):
+                mouse_painting = True
+                print('You pressed "m". You are painting with the mouse.             ', end='\r')
 
-        # Paint with the mask if "n" is pressed.
-        elif key == ord('n'):
-            mouse_painting = False
-            print('You pressed "n".You are painting with the mask.                ', end='\r')
+            # Paint with the mask if "n" is pressed.
+            elif key == ord('n'):
+                mouse_painting = False
+                print('You pressed "n".You are painting with the mask.                ', end='\r')
 
-        # Toggle a variable to show the real image if "v" is pressed.
-        elif key == ord('v'):
-            real_toggle = ~ real_toggle
-            if real_toggle:
-                print('You pressed "v". You are seeing the real frame.                ', end='\r')
-            else:
-                print('You pressed "v". You are seeing the white canvas.               ', end='\r')
+            # Toggle a variable to show the real image if "v" is pressed.
+            elif key == ord('v'):
+                real_toggle = not real_toggle
+                if real_toggle:
+                    print('You pressed "v". You are seeing the real frame.                ', end='\r')
+                else:
+                    print('You pressed "v". You are seeing the white canvas.               ', end='\r')
 
-        # Clear the window if "c" is pressed.
-        elif key == ord('c'):
-            if not args['use_numeric_paint']:
-                blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
-            else:
-                blank_image = numeric_paint_blank_image
-            print('\nYou pressed "c": The window "Canvas" was cleared.')
+            # Clear the window if "c" is pressed.
+            elif key == ord('c'):
+                if not args['use_numeric_paint']:
+                    blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
+                else:
+                    blank_image = numeric_paint_blank_image
+                print('\nYou pressed "c": The window "Canvas" was cleared.')
 
-        # Save the current image if "w" is pressed.
-        elif key == ord('w'):
-            date = ctime()
-            cv2.imwrite('drawing_' + date + '.png', blank_image)
-            print('\nCurrent image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
+            # Save the current image if "w" is pressed.
+            elif key == ord('w'):
+                date = ctime()
+                cv2.imwrite('drawing_' + date + '.png', blank_image)
+                print('\nCurrent image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
 
-        # Draw a rectangle when pressing 's' key
-        elif key == ord('s'):
-            cv2.setMouseCallback("Canvas", draw_rectangle)
-            if point1 and point2:
-                cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
-                blank_image = copy.deepcopy(cache)
+            # Draw a rectangle when pressing 's' key
+            elif key == ord('s'):
+                rect = not rect
+                mouse_painting = not mouse_painting
+                if rect:
+                    print('You pressed "s".You are drawing a rectangle.                ', end='\r')
 
-        # Draw a circle when pressing 'o' key
-        elif key == ord('o'):
-            cv2.setMouseCallback('Canvas', draw_circle)
-            if ix and iy:
-                cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
+            # Draw a circle when pressing 'o' key
+            elif key == ord('o'):
+                cv2.setMouseCallback('Canvas', draw_circle)
+                if ix and iy:
+                    cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
@@ -346,6 +387,12 @@ def main():
 
                 break
 
+        # Defining mouse callback
+        onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect)
+        cv2.setMouseCallback("Canvas", onMouseDefault)
+
+
+        # Changing to real frame
         if real_toggle:
             # Replacing the white canvas with the real frame
             blend_image = createBlend(blank_image, frame)
