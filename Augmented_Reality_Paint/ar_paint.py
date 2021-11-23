@@ -51,18 +51,20 @@ radius = 0
 
 
 def draw_rectangle(event, x, y, flags, params):
-    global point1, point2, draw
+    global point1, point2, draw, cache, blank_image
 
     if event == cv2.EVENT_LBUTTONDOWN:
         if draw is False:
             draw = True
             point1 = (x, y)
+            cache = copy.deepcopy(blank_image)
         else:
             draw = False
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if draw is True:
             point2 = (x, y)
+            blank_image = copy.deepcopy(cache)
 
 
 # Create a function based on a CV2 Event (Left button click)
@@ -104,7 +106,7 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_image, painted_image, isdown, center_mouse, video_capture
+    global numeric_paint_blank_image, painted_image, isdown, center_mouse, video_capture, cache, blank_image
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -131,6 +133,9 @@ def main():
     window_width = frame.shape[1]
     window_height = frame.shape[0]
     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
+
+    #
+    cache = copy.deepcopy(blank_image)
 
     cprint('Welcome to our Augmented Reality Paint! ENJOY!'
            , color='white', on_color='on_green', attrs=['blink'])
@@ -267,13 +272,14 @@ def main():
         elif key == ord('s'):
             cv2.setMouseCallback("Canvas", draw_rectangle)
             if point1 and point2:
-                cv2.rectangle(frame, point1, point2, (0, 255, 0))
+                cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
+                blank_image = copy.deepcopy(cache)
 
         # Draw a circle when pressing 'o' key
         elif key == ord('o'):
             cv2.setMouseCallback('Canvas', draw_circle)
             if ix and iy:
-                cv2.circle(frame, (ix, iy), radius, (0, 0, 255), 1)
+                cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
