@@ -10,3 +10,4 @@ The program consists of two main scripts: <br>
 as the pointer. The mask limits will be saved as a .json file; <br>
 - ar_paint.py - Using the limits given by the previous script, transform the user's webcam into a pointer and painting 
 in a white canvas. The user can also draw geometric shapes, draw with the mouse and play a coloring game!
+

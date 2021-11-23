@@ -242,7 +242,7 @@ def main():
             print('You pressed "n".You are painting with the mask.                ', end='\r')
 
         # Toggle a variable to show the real image if "v" is pressed.
-        if key == ord('v'):
+        elif key == ord('v'):
             real_toggle = ~ real_toggle
             if real_toggle:
                 print('You pressed "v". You are seeing the real frame.                ', end='\r')
