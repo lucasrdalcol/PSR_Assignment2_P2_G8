@@ -3,77 +3,64 @@ import cv2
 import numpy as np
 import math
 
-drawing = False
+draw = False
 point1 = ()
 point2 = ()
 ix, iy = -1, -1
 radius = 0
 choice = cv2.waitKey(1)
 
-def mouse_drawing(event, x, y, flags, params):
-    global point1, point2, drawing
+def draw_rectangle(event, x, y, flags, params):
+    global point1, point2, draw
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        if drawing is False:
-            drawing = True
+        if draw is False:
+            draw = True
             point1 = (x, y)
         else:
-            drawing = False
+            draw = False
 
     elif event == cv2.EVENT_MOUSEMOVE:
-        if drawing is True:
+        if draw is True:
             point2 = (x, y)
 
 
 # Create a function based on a CV2 Event (Left button click)
 def draw_circle(event, x, y, flags, param):
-    global ix, iy, drawing, radius
+    global ix, iy, draw, radius
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        drawing = True
+        draw = True
         # we take note of where that mouse was located
         ix, iy = x, y
 
     elif event == cv2.EVENT_MOUSEMOVE:
-        drawing == True
+        draw == True
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius = int(math.sqrt(((ix - x) ** 2) + ((iy - y) ** 2)))
         cv2.circle(capture, (ix, iy), radius, (0, 0, 255), thickness=1)
-        drawing = False
+        draw = False
 
 capture = cv2.VideoCapture(0)
 
 cv2.namedWindow("Frame")
 
 while True:
-    _, frame = capture.read()
+    ret, frame = capture.read()
     key = cv2.waitKey(1)
     if key == 27:
         break
-    elif key == ord('r'):
-        cv2.setMouseCallback("Frame", mouse_drawing)
+    elif key == ord('s'):
+        cv2.setMouseCallback("Frame", draw_rectangle)
         if point1 and point2:
             cv2.rectangle(frame, point1, point2, (0, 255, 0))
-    elif key == ord('c'):
+    elif key == ord('o'):
         cv2.setMouseCallback('Frame', draw_circle)
         if ix and iy:
             cv2.circle(frame, (ix, iy), radius, (0, 0, 255), 1)
-
-
-    # if choice != -1:
-    #     if choice == ord('r'):
-    #         cv2.setMouseCallback("Frame", mouse_drawing)
-    #         if point1 and point2:
-    #             cv2.rectangle(frame, point1, point2, (0, 255, 0))
-    #     elif choice == ord('c'):
-    #         # Connects the mouse button to our callback function
-    #         cv2.setMouseCallback('Frame', draw_circle)
-    #         if ix and iy:
-    #             cv2.circle(frame, (ix, iy), radius, (0, 0, 255), 1)
 
     cv2.imshow("Frame", frame)
 
 capture.release()
 cv2.destroyAllWindows()
-
