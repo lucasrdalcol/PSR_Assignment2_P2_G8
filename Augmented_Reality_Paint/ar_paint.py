@@ -75,15 +75,17 @@ def draw_rectangle(event, x, y, flags, params):
 
 # Create a function based on a CV2 Event (Left button click)
 def draw_circle(event, x, y, flags, param):
-    global ix, iy, draw, radius
+    global ix, iy, draw, radius, blank_image, cache
 
     if event == cv2.EVENT_LBUTTONDOWN:
         draw = True
         # we take note of where that mouse was located
         ix, iy = x, y
+        cache = copy.deepcopy(blank_image)
 
     elif event == cv2.EVENT_MOUSEMOVE:
         draw = True
+        blank_image = copy.deepcopy(cache)
 
     elif event == cv2.EVENT_LBUTTONUP:
         radius = int(math.sqrt(((ix - x) ** 2) + ((iy - y) ** 2)))
@@ -91,13 +93,19 @@ def draw_circle(event, x, y, flags, param):
         draw = False
 
 
-def onMouse(event, x, y, flags, param, draw, rect, circle):
+def onMouse(event, x, y, flags, param, draw, rect, circ):
     global isdown
     global center_mouse
     global cache
     global blank_image
     global drect
     global point1, point2
+    global ix, iy
+    global dcirc
+
+    print("Draw: "+ str(draw))
+    print("Rectangle: "+str(rect))
+    print("Circle: "+str(circ))
 
     if event == cv2.EVENT_MOUSEMOVE:
         if draw:
@@ -107,7 +115,10 @@ def onMouse(event, x, y, flags, param, draw, rect, circle):
             if drect is True:
                 point2 = (x, y)
                 blank_image = copy.deepcopy(cache)
-
+        elif circ:
+            if dcirc is True:
+                ix, iy = (x, y)
+                blank_image = copy.deepcopy(cache)
 
     if event == cv2.EVENT_LBUTTONDOWN:
         if draw:
@@ -122,6 +133,14 @@ def onMouse(event, x, y, flags, param, draw, rect, circle):
                 cache = copy.deepcopy(blank_image)
             else:
                 drect = False
+        elif circ:
+            print('Left button circle')
+            if dcirc is False:
+                dcirc = True
+                ix, iy = (x,y)
+                cache = copy.deepcopy(blank_image)
+            else:
+                dcirc = False
 
     if event == cv2.EVENT_LBUTTONUP:
         if draw:
@@ -129,11 +148,19 @@ def onMouse(event, x, y, flags, param, draw, rect, circle):
         elif rect:
             if drect is True:
                 point2 = (x, y)
+        elif circ:
+            if dcirc is True:
+                ix, iy = (x, y)
 
     if rect:
         if point1 and point2:
-            print('Drawing')
+            print('Drawing rectangle')
             cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
+
+    if circ:
+        if ix and iy:
+            print('Drawing circle')
+            cv2.circle(blank_image, (ix,iy), radius , (0,0,255),1)
 
 
 def main():
@@ -141,7 +168,7 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_image, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image
+    global numeric_paint_blank_image, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image, dcirc
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -197,8 +224,11 @@ def main():
 
 
     # Setting up variables
+    circ = False
+    dcirc = False
     rect = False
     drect = False
+
     real_toggle = False
     isdown = False
     mouse_painting = True
@@ -210,8 +240,6 @@ def main():
     center_mouse = (200, 200)
     center_prev = (200, 200)
     center_prev_mouse = (200, 200)
-
-
 
     cv2.imshow("Canvas", blank_image)
     # onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect)
@@ -312,15 +340,18 @@ def main():
             # Draw a rectangle when pressing 's' key
             elif key == ord('s'):
                 rect = not rect
-                mouse_painting = not mouse_painting
                 if rect:
+                    circ = False
+                    mouse_painting = False
                     print('You pressed "s".You are drawing a rectangle.                ', end='\r')
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
-                cv2.setMouseCallback('Canvas', draw_circle)
-                if ix and iy:
-                    cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
+                circ = not circ
+                if circ:
+                    rect = False
+                    mouse_painting = False
+                    print("You pressed 'o'. You are drawing a circle.                ", end='\r')
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
@@ -388,7 +419,7 @@ def main():
                 break
 
         # Defining mouse callback
-        onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect)
+        onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect, circ=circ)
         cv2.setMouseCallback("Canvas", onMouseDefault)
 
 
