@@ -341,15 +341,17 @@ def main():
                                      ** (1/2))
                         blank_image = copy.deepcopy(cache)
                         cv2.circle(blank_image, start_point, radius, color, radio)
+
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
                     print(center_mouse)
                     if center_mouse is not None:
                         if listmouse[-2] is None:
+                            print('Saving')
                             cache = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
                         else:
-                            end_point_mouse = (round(centroid[0]), round(centroid[1]))
+                            end_point_mouse = center_mouse
                             radius = int(((start_point_mouse[0] - end_point_mouse[0]) ** 2 + (start_point_mouse[1] - end_point_mouse[1]) ** 2)
                                          ** (1 / 2))
                             blank_image = copy.deepcopy(cache)
