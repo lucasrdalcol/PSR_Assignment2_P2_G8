@@ -347,19 +347,21 @@ def main():
 
             # Draw a rectangle when pressing 's' key
             elif key == ord('s'):
-                rect = not rect
-                if rect:
-                    circ = False
-                    mouse_painting = False
-                    print('You pressed "s". You are drawing a rectangle.                ', end='\r')
+                if not args['use_numeric_paint']:
+                    rect = not rect
+                    if rect:
+                        circ = False
+                        mouse_painting = False
+                        print('You pressed "s". You are drawing a rectangle.                ', end='\r')
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
-                circ = not circ
-                if circ:
-                    rect = False
-                    mouse_painting = False
-                    print("You pressed 'o'. You are drawing a circle.                ", end='\r')
+                if not args['use_numeric_paint']:
+                    circ = not circ
+                    if circ:
+                        rect = False
+                        mouse_painting = False
+                        print("You pressed 'o'. You are drawing a circle.                ", end='\r')
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
