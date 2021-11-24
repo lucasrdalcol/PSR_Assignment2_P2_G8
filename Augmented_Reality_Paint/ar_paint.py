@@ -173,8 +173,13 @@ def main():
         print("\nYou can also check the 'Painted image' to see how it should be like")
         print('Press the space bar to finish and evaluate your painting...\n')
 
-        cv2.imshow('Painted image', painted_image)
+        cv2.namedWindow('Painted Image', cv2.WINDOW_NORMAL)
+        cv2.imshow('Painted Image', painted_image)
 
+    # Defining cv2 windows
+    cv2.namedWindow('Canvas', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Original', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Mask', cv2.WINDOW_NORMAL)
 
     # Setting up variables
     circ = False
