@@ -103,6 +103,7 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
     global point1, point2
     global ix, iy
     global dcirc
+    global color
 
     # print("Draw: "+ str(draw))
     # print("Rectangle: "+str(rect))
@@ -156,7 +157,7 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
     if rect:
         if point1 and point2:
             # print('Drawing rectangle')
-            cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
+            cv2.rectangle(blank_image, point1, point2, color)
 
     if circ:
         if ix and iy:
@@ -169,7 +170,8 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_original, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image, dcirc
+    global numeric_paint_blank_original, painted_image, isdown, drect, center_mouse, video_capture, cache, \
+        blank_image, dcirc, color
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -318,7 +320,7 @@ def main():
             # Paint with the mask if "n" is pressed.
             elif key == ord('n'):
                 mouse_painting = False
-                print('You pressed "n".You are painting with the mask.                ', end='\r')
+                print('You pressed "n". You are painting with the mask.                ', end='\r')
 
             # Toggle a variable to show the real image if "v" is pressed.
             elif key == ord('v'):
@@ -349,7 +351,7 @@ def main():
                 if rect:
                     circ = False
                     mouse_painting = False
-                    print('You pressed "s".You are drawing a rectangle.                ', end='\r')
+                    print('You pressed "s". You are drawing a rectangle.                ', end='\r')
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
@@ -362,7 +364,7 @@ def main():
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
         else:
-            if mouse_painting:  # Code for when the user is pressing the mouse
+            if isdown:  # Code for when the user is pressing the mouse
                 if shake_prevention_on:  # if the user uses the shake prevention
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
@@ -392,11 +394,11 @@ def main():
                             center_prev = center  # defining the center_prev to use in the next cycle
                         else:
                             # Paint a line according to the inputs
-                            cv2.line(blank_image, center_prev, center, color, radio)
+                            # cv2.line(blank_image, center_prev, center, color, radio)
                             center_prev = center  # defining the center_prev to use in the next cycle
                     else:
                         # Paint a line according to the inputs
-                        cv2.line(blank_image, center_prev, center, color, radio)
+                        # cv2.line(blank_image, center_prev, center, color, radio)
                         center_prev = center  # defining the center_prev to use in the next cycle
 
         if args['use_numeric_paint']:
