@@ -382,26 +382,27 @@ def main():
                     cv2.line(blank_image, center_prev_mouse, center_mouse, color, radio)
                     center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
             else:  # Code for when the user is not pressing the mouse
-                if centroid is None:
-                    pass
-                else:
-                    # Change the variable centroid to a tuple in center
-                    center = (int(centroid[0]), int(centroid[1]))
+                if not mouse_painting:
+                    if centroid is None:
+                        pass
+                    else:
+                        # Change the variable centroid to a tuple in center
+                        center = (int(centroid[0]), int(centroid[1]))
 
-                    if shake_prevention_on:  # if the user uses the shake prevention
+                        if shake_prevention_on:  # if the user uses the shake prevention
 
-                        # Calculate the distance between the centroid detected and the previous centroid detected
-                        distance = math.sqrt(((center[0] - center_prev[0]) ** 2) + ((center[1] - center_prev[1]) ** 2))
-                        if distance > 40:  # if the distance is bigger than a defined number, the program doesn't paint
-                            center_prev = center  # defining the center_prev to use in the next cycle
+                            # Calculate the distance between the centroid detected and the previous centroid detected
+                            distance = math.sqrt(((center[0] - center_prev[0]) ** 2) + ((center[1] - center_prev[1]) ** 2))
+                            if distance > 40:  # if the distance is bigger than a defined number, the program doesn't paint
+                                center_prev = center  # defining the center_prev to use in the next cycle
+                            else:
+                                # Paint a line according to the inputs
+                                cv2.line(blank_image, center_prev, center, color, radio)
+                                center_prev = center  # defining the center_prev to use in the next cycle
                         else:
                             # Paint a line according to the inputs
-                            # cv2.line(blank_image, center_prev, center, color, radio)
+                            cv2.line(blank_image, center_prev, center, color, radio)
                             center_prev = center  # defining the center_prev to use in the next cycle
-                    else:
-                        # Paint a line according to the inputs
-                        # cv2.line(blank_image, center_prev, center, color, radio)
-                        center_prev = center  # defining the center_prev to use in the next cycle
 
         if args['use_numeric_paint']:
             # If you press space bar, the program shuts down
