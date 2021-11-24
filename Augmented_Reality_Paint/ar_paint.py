@@ -88,7 +88,8 @@ def draw_circle(event, x, y, flags, param):
         blank_image = copy.deepcopy(cache)
 
     elif event == cv2.EVENT_LBUTTONUP:
-        radius = int(math.sqrt(((ix - x) ** 2) + ((iy - y) ** 2)))
+        fx, fy = x, y
+        radius = int(math.sqrt(((ix - fx) ** 2) + ((iy - fy) ** 2)))
         cv2.circle(video_capture, (ix, iy), radius, (0, 0, 255), thickness=1)
         draw = False
 
@@ -103,9 +104,9 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
     global ix, iy
     global dcirc
 
-    print("Draw: "+ str(draw))
-    print("Rectangle: "+str(rect))
-    print("Circle: "+str(circ))
+    # print("Draw: "+ str(draw))
+    # print("Rectangle: "+str(rect))
+    # print("Circle: "+str(circ))
 
     if event == cv2.EVENT_MOUSEMOVE:
         if draw:
@@ -125,7 +126,7 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
             isdown = True
             center_mouse = (x, y)
         elif rect:
-            print('Left Button')
+            # print('Left Button')
             if drect is False:
                 drect = True
                 point1 = (x, y)
@@ -134,10 +135,10 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
             else:
                 drect = False
         elif circ:
-            print('Left button circle')
+            # print('Left button circle')
             if dcirc is False:
                 dcirc = True
-                ix, iy = (x,y)
+                ix, iy = (x, y)
                 cache = copy.deepcopy(blank_image)
             else:
                 dcirc = False
@@ -154,13 +155,13 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
 
     if rect:
         if point1 and point2:
-            print('Drawing rectangle')
+            # print('Drawing rectangle')
             cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
 
     if circ:
         if ix and iy:
-            print('Drawing circle')
-            cv2.circle(blank_image, (ix,iy), radius , (0,0,255),1)
+            # print('Drawing circle')
+            cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
 
 
 def main():
@@ -168,7 +169,7 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_image, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image, dcirc
+    global numeric_paint_blank_original, painted_image, isdown, drect, center_mouse, video_capture, cache, blank_image, dcirc
 
     # Create argparse
     ap = argparse.ArgumentParser()
@@ -210,7 +211,7 @@ def main():
                , color='white', on_color='on_blue', attrs=['blink'])
 
         blank_image, painted_image = drawNumericPaintImage(blank_image=blank_image)
-        numeric_paint_blank_image = copy.deepcopy(blank_image)
+        numeric_paint_blank_original = copy.deepcopy(blank_image)
 
         # print to the user which color should he print in it index
         print('\nColor index 1 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
@@ -220,8 +221,6 @@ def main():
         print('Press the space bar to finish and evaluate your painting...\n')
 
         cv2.imshow('Painted image', painted_image)
-
-
 
     # Setting up variables
     circ = False
@@ -279,31 +278,37 @@ def main():
             if key == ord('b'):
                 color = (255, 0, 0)
                 color_str = 'BLUE'
-                print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL, end='\r')
+                print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL,
+                      end='\r')
 
             # Choose the color green if "g" is pressed.
             elif key == ord('g'):
                 color = (0, 255, 0)
                 color_str = 'GREEN'
-                print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL, end='\r')
+                print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL,
+                      end='\r')
 
             # Choose the color red if "r" is pressed.
             elif key == ord('r'):
                 color = (0, 0, 255)
                 color_str = 'RED'
-                print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL, end='\r')
+                print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                      end='\r')
 
             # Increase the pencil size if "+" is pressed.
             elif key == ord('+'):
                 radio = radio + 1
-                print('Pencil size is now ' + Fore.GREEN + str(radio) + Style.RESET_ALL + '                               ', end='\r')
+                print('Pencil size is now ' + Fore.GREEN + str(
+                    radio) + Style.RESET_ALL + '                               ', end='\r')
 
             # Decrease the pencil size if "-" is pressed.
             elif key == ord('-'):
                 radio = radio - 1
                 if radio < 0:
                     radio = 0
-                print('Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '                              ', end='\r')
+                print(
+                    'Pencil size is now ' + Fore.RED + str(radio) + Style.RESET_ALL + '                              ',
+                    end='\r')
 
             # Paint with the mouse if "m" is pressed.
             elif key == ord('m'):
@@ -328,7 +333,8 @@ def main():
                 if not args['use_numeric_paint']:
                     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
                 else:
-                    blank_image = numeric_paint_blank_image
+                    numeric_paint_cleared = copy.deepcopy(numeric_paint_blank_original)
+                    blank_image = numeric_paint_cleared
                 print('\nYou pressed "c": The window "Canvas" was cleared.')
 
             # Save the current image if "w" is pressed.
@@ -404,7 +410,7 @@ def main():
                       + str(round(similarity * 100, 2)) + ' %')
                 if 0 <= similarity < 0.5:
                     cprint('Your painting is not even 50% to the correct one. Keep practicing!'
-                            , color='white', on_color='on_red', attrs=['blink'])
+                           , color='white', on_color='on_red', attrs=['blink'])
                 elif 0.5 <= similarity < 0.75:
                     cprint('You were good, but can be better.'
                            , color='white', on_color='on_blue', attrs=['blink'])
@@ -421,7 +427,6 @@ def main():
         # Defining mouse callback
         onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect, circ=circ)
         cv2.setMouseCallback("Canvas", onMouseDefault)
-
 
         # Changing to real frame
         if real_toggle:
