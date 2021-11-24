@@ -154,15 +154,15 @@ def onMouse(event, x, y, flags, param, draw, rect, circ):
             if dcirc is True:
                 ix, iy = (x, y)
 
-    if rect:
-        if point1 and point2:
-            # print('Drawing rectangle')
-            cv2.rectangle(blank_image, point1, point2, color)
-
-    if circ:
-        if ix and iy:
-            # print('Drawing circle')
-            cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
+    # if rect:
+    #     if point1 and point2:
+    #         # print('Drawing rectangle')
+    #         cv2.rectangle(blank_image, point1, point2, (0, 255, 0))
+    #
+    # if circ:
+    #     if ix and iy:
+    #         # print('Drawing circle')
+    #         cv2.circle(blank_image, (ix, iy), radius, (0, 0, 255), 1)
 
 
 def main():
@@ -191,15 +191,10 @@ def main():
     video_capture = cv2.VideoCapture(0)
     ret, frame = video_capture.read()
 
-    # Setting up timer
-    start_time = tic()
-
     # Setting up the painting interface. Canvas image.
     window_width = frame.shape[1]
     window_height = frame.shape[0]
     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
-
-    cache = copy.deepcopy(blank_image)
 
     cprint('Welcome to our Augmented Reality Paint! ENJOY!'
            , color='white', on_color='on_green', attrs=['blink'])
@@ -229,11 +224,11 @@ def main():
     dcirc = False
     rect = False
     drect = False
-
     real_toggle = False
     isdown = False
     mouse_painting = True
     radio = 5
+    counter_square = 0
     # global color
     color = (255, 0, 0)
     color_str = 'BLUE'
@@ -241,6 +236,7 @@ def main():
     center_mouse = (200, 200)
     center_prev = (200, 200)
     center_prev_mouse = (200, 200)
+    listkeys = []
 
     cv2.imshow("Canvas", blank_image)
     # onMouseDefault = partial(onMouse, draw=mouse_painting, rect=rect)
@@ -272,6 +268,9 @@ def main():
 
         # Keyboard commands
         key = cv2.waitKey(1)
+
+        # Append key to list
+        listkeys.append(key)
 
         # if a key is pressed
         if key != -1:
@@ -346,13 +345,21 @@ def main():
                 print('\nCurrent image saved as: ' + Fore.BLUE + 'drawing_' + date + '.png' + Style.RESET_ALL)
 
             # Draw a rectangle when pressing 's' key
-            elif key == ord('s'):
+            if key == ord('s'):
                 if not args['use_numeric_paint']:
-                    rect = not rect
-                    if rect:
-                        circ = False
-                        mouse_painting = False
-                        print('You pressed "s". You are drawing a rectangle.                ', end='\r')
+                    # If the previous pressed key was not s, create a cache and save the starting point
+                    if listkeys[-2] != ord('s'):
+                        print('Recording')
+                        cache = copy.deepcopy(blank_image)
+                        start_point = (round(centroid[0]), round(centroid[1]))
+
+                    # If the previous pressed keys was an s, draw rectangle
+                    else:
+                        end_point = (round(centroid[0]), round(centroid[1]))
+                        blank_image = copy.deepcopy(cache)
+                        print('Start: ' + str(start_point))
+                        print('End: ' + str(end_point))
+                        cv2.rectangle(blank_image, start_point, end_point, (0, 255, 0), 2)
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
