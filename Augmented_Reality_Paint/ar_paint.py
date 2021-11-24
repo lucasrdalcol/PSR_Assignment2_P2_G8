@@ -314,7 +314,7 @@ def main():
 
             # Draw a rectangle when pressing 's' key
             if key == ord('s'):
-                if not args['use_numeric_paint']:
+                if not args['use_numeric_paint'] and not mouse_painting:
                     # If the previous pressed key was not s, create a cache and save the starting point
                     if listkeys[-2] != ord('s'):
                         cache = copy.deepcopy(blank_image)
@@ -325,6 +325,17 @@ def main():
                         end_point = (round(centroid[0]), round(centroid[1]))
                         blank_image = copy.deepcopy(cache)
                         cv2.rectangle(blank_image, start_point, end_point, color, radio)
+
+                # If used on "mouse" mode
+                elif not args['use_numeric_paint'] and mouse_painting:
+                    if center_mouse is not None:
+                        if listmouse[-2] is None:
+                            cache = copy.deepcopy(blank_image)
+                            start_point_mouse = center_mouse
+                        else:
+                            end_point_mouse = center_mouse
+                            blank_image = copy.deepcopy(cache)
+                            cv2.rectangle(blank_image, start_point_mouse, end_point_mouse, color, radio)
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
@@ -344,10 +355,8 @@ def main():
 
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
-                    print(center_mouse)
                     if center_mouse is not None:
                         if listmouse[-2] is None:
-                            print('Saving')
                             cache = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
                         else:
