@@ -364,11 +364,21 @@ def main():
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
                 if not args['use_numeric_paint']:
-                    circ = not circ
-                    if circ:
-                        rect = False
-                        mouse_painting = False
-                        print("You pressed 'o'. You are drawing a circle.                ", end='\r')
+                    if not args['use_numeric_paint']:
+                        # If the previous pressed key was not o, create a cache and save the starting point
+                        if listkeys[-2] != ord('o'):
+                            print('Recording')
+                            cache = copy.deepcopy(blank_image)
+                            start_point = (round(centroid[0]), round(centroid[1]))
+                        # If the previous pressed keys was an o, draw circle
+                        else:
+                            end_point = (round(centroid[0]), round(centroid[1]))
+                            radius = int(((start_point[0] - end_point[0]) ** 2 + (start_point[1] - end_point[1]) ** 2)
+                                         ** (1/2))
+                            blank_image = copy.deepcopy(cache)
+                            print('Start: ' + str(start_point))
+                            print('End: ' + str(end_point))
+                            cv2.circle(blank_image, start_point, radius, (0, 255, 0), 2)
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
