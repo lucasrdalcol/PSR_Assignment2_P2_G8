@@ -366,7 +366,7 @@ def main():
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
         else:
-            if isdown:  # Code for when the user is pressing the mouse
+            if isdown and mouse_painting:  # Code for when the user is pressing the mouse and to paint with mouse
                 if shake_prevention_on:  # if the user uses the shake prevention
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
@@ -381,7 +381,7 @@ def main():
                     # Paint a line according to the inputs
                     cv2.line(blank_image, center_prev_mouse, center_mouse, color, radio)
                     center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
-            else:  # Code for when the user is not pressing the mouse
+            else:  # Code for when the user is not pressing the mouse and painting with the mask
                 if not mouse_painting:
                     if centroid is None:
                         pass
