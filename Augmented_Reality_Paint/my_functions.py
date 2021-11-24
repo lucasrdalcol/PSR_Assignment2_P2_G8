@@ -260,6 +260,13 @@ def findConnectedRegions(mask_original):
 
 
 def mse(image_a, image_b):
+    """
+    Calculates the mean square error between two images
+    :param image_a: Cv2 Image - UInt8
+    :param image_b: Cv2 Image - UInt8
+    :return:
+    """
+
     # the 'Mean Squared Error' between the two images is the
     # sum of the squared difference between the two images;
     # NOTE: the two images must have the same dimension
@@ -272,6 +279,12 @@ def mse(image_a, image_b):
 
 
 def compareImages(image_a, image_b):
+    """
+    Compare two images and plotting them
+    :param image_a:
+    :param image_b:
+    :return:
+    """
     # compute the mean squared error and structural similarity
     # index for the images
 
@@ -301,6 +314,11 @@ def compareImages(image_a, image_b):
 
 
 def drawNumericPaintImage(blank_image):
+    """
+    Generates a random pattern to colour
+    :param blank_image:
+    :return:
+    """
     # Create random lines in the blank image
     down_tol = 0.2
     up_tol = 0.8
@@ -337,3 +355,5 @@ def drawNumericPaintImage(blank_image):
         painted_image[mask] = region_color_value['color']
 
     return blank_image, painted_image
+
+

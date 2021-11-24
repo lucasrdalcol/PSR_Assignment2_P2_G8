@@ -27,15 +27,6 @@ import math
 from skimage.metrics import structural_similarity as ssim
 from functools import partial
 
-install_extras(['python'])
-set_default_style('light')
-draw = False
-point1 = ()
-point2 = ()
-ix, iy = -1, -1
-radius = 0
-
-
 # ---------------------------------------------------
 # Script of a Augmented Reality Paint - Assignment 2 - PSR. Example of similar software here:
 # https://www.youtube.com/watch?v=ud119RI_Rpg
@@ -50,64 +41,19 @@ radius = 0
 # PSR, University of Aveiro, November 2021.
 # ---------------------------------------------------
 
-
-def draw_rectangle(event, x, y, flags, params):
-    global point1, point2, draw, cache, blank_image
-
-    if event == cv2.EVENT_LBUTTONDOWN:
-        if draw is False:
-            draw = True
-            point1 = (x, y)
-            point2 = (x, y)
-            cache = copy.deepcopy(blank_image)
-        else:
-            draw = False
-
-    elif event == cv2.EVENT_MOUSEMOVE:
-        if draw is True:
-            point2 = (x, y)
-            blank_image = copy.deepcopy(cache)
-
-    elif event == cv2.EVENT_LBUTTONUP:
-        if draw is True:
-            point2 = (x, y)
-
-
-# Create a function based on a CV2 Event (Left button click)
-def draw_circle(event, x, y, flags, param):
-    global ix, iy, draw, radius, blank_image, cache
-
-    if event == cv2.EVENT_LBUTTONDOWN:
-        draw = True
-        # we take note of where that mouse was located
-        ix, iy = x, y
-        cache = copy.deepcopy(blank_image)
-
-    elif event == cv2.EVENT_MOUSEMOVE:
-        draw = True
-        blank_image = copy.deepcopy(cache)
-
-    elif event == cv2.EVENT_LBUTTONUP:
-        fx, fy = x, y
-        radius = int(math.sqrt(((ix - fx) ** 2) + ((iy - fy) ** 2)))
-        cv2.circle(video_capture, (ix, iy), radius, (0, 0, 255), thickness=1)
-        draw = False
-
-
+# Callback of mouse
 def onMouse(event, x, y, flags, param):
+    """
+    Retrieving mouse coordinates while left button is clicked
+    :param event:
+    :param x:
+    :param y:
+    :param flags:
+    :param param:
+    :return:
+    """
     global isdown
     global center_mouse
-    global cache
-    global blank_image
-    global drect
-    global point1, point2
-    global ix, iy
-    global dcirc
-    global color
-
-    # print("Draw: "+ str(draw))
-    # print("Rectangle: "+str(rect))
-    # print("Circle: "+str(circ))
 
     if event == cv2.EVENT_MOUSEMOVE:
         if isdown:
@@ -122,22 +68,51 @@ def onMouse(event, x, y, flags, param):
         center_mouse = None
 
 
+
 def main():
     # ---------------------------------------------------
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_original, painted_image, isdown, drect, center_mouse, video_capture, cache, \
-        blank_image, dcirc, color
+    global numeric_paint_blank_original, painted_image, isdown, center_mouse
+
+    # Setting up variables
+    real_toggle = False
+    isdown = False
+    mouse_painting = True
+    radio = 5
+    color = (255, 0, 0)
+    color_str = 'BLUE'
+    center_mouse = (200, 200)
+    center_prev = (200, 200)
+    center_prev_mouse = (200, 200)
+    threshold = 100
+    listkeys = []
+    listmouse = []
+
+    # Initial print
+    cprint('Welcome to our Augmented Reality Paint! ENJOY!'
+           , color='white', on_color='on_green', attrs=['blink'])
+
+    print("\n\nContributors: \n- Lucas Rodrigues Dal'Col \n- Manuel Alberto Silva Gomes"
+          " \n- Emanuel Krzysztoń \n- João Pedro Tira Picos Costa Nunes \n\nPSR, University of Aveiro, "
+          "November 2021.\n")
 
     # Create argparse
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description='Program to paint on Augmented Reality')
     ap.add_argument('-j', '--json', required=True, help="Input json file path")
     ap.add_argument('-usp', '--use_shake_prevention', action='store_true',
                     help='Select this option to use shake prevention.')
     ap.add_argument('-unp', '--use_numeric_paint', action='store_true',
                     help='Select this option to use numeric paint.')
     args = vars(ap.parse_args())
+
+    # Defining shake prevention
+    if args['use_shake_prevention']:  # if the user uses the shake prevention
+        print(Fore.BLUE + Back.WHITE + 'You are using shake prevention.' + Style.RESET_ALL)
+        shake_prevention_on = 1
+    else:
+        shake_prevention_on = 0
 
     # Opening JSON file
     with open(args['json']) as file_handle:
@@ -153,27 +128,24 @@ def main():
     window_height = frame.shape[0]
     blank_image = 255 * np.ones(shape=[window_height, window_width, 3], dtype=np.uint8)
 
-    cprint('Welcome to our Augmented Reality Paint! ENJOY!'
-           , color='white', on_color='on_green', attrs=['blink'])
-
-    print("\n\nContributors: \n- Lucas Rodrigues Dal'Col \n- Manuel Alberto Silva Gomes"
-          " \n- Emanuel Krzysztoń \n- João Pedro Tira Picos Costa Nunes \n\nPSR, University of Aveiro, "
-          "November 2021.\n")
-
+    # Setup for numeric paint
     if args['use_numeric_paint']:
+        # Print
         cprint('You chose numeric paint mode!'
                , color='white', on_color='on_blue', attrs=['blink'])
 
+        # Generating the numeric picture
         blank_image, painted_image = drawNumericPaintImage(blank_image=blank_image)
         numeric_paint_blank_original = copy.deepcopy(blank_image)
 
-        # print to the user which color should he print in it index
+        # Print to the user which color should he print in it index
         print('\nColor index 1 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
         print('Color index 2 corresponds to ' + Fore.GREEN + 'green ' + Fore.RESET + 'color.')
         print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
         print("\nYou can also check the 'Painted image' to see how it should be like")
         print('Press the space bar to finish and evaluate your painting...\n')
 
+        # Defining the window and showing the painted image
         cv2.namedWindow('Painted Image', cv2.WINDOW_NORMAL)
         cv2.imshow('Painted Image', painted_image)
 
@@ -182,37 +154,13 @@ def main():
     cv2.namedWindow('Original', cv2.WINDOW_NORMAL)
     cv2.namedWindow('Mask', cv2.WINDOW_NORMAL)
 
-    # Setting up variables
-    circ = False
-    dcirc = False
-    rect = False
-    drect = False
-    real_toggle = False
-    isdown = False
-    mouse_painting = True
-    radio = 5
-    counter_square = 0
-    # global color
-    color = (255, 0, 0)
-    color_str = 'BLUE'
-    center = (200, 200)
-    center_mouse = (200, 200)
-    center_prev = (200, 200)
-    center_prev_mouse = (200, 200)
-    listkeys = []
-    listmouse = []
-
+    # Showing the canvas
     cv2.imshow("Canvas", blank_image)
 
     # Defining mouse callback
     cv2.setMouseCallback("Canvas", onMouse)
 
-    if args['use_shake_prevention']:  # if the user uses the shake prevention
-        print(Fore.BLUE + Back.WHITE + 'You are using shake prevention.' + Style.RESET_ALL)
-        shake_prevention_on = 1
-    else:
-        shake_prevention_on = 0
-
+    # Print
     print('You started your paint with color ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
           str(radio) + Fore.RESET + ' as default parameters. \nYou started painting with the mouse. \nPress ' + Fore.RED + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL + ' to paint with the mouse again.\nPress ' + Fore.RED + '"v"' + Style.RESET_ALL + ' to toggle between the white canvas and the real frame.')
 
@@ -220,6 +168,7 @@ def main():
     # Execution
     # ---------------------------------------------------
     while video_capture.isOpened():
+        # Capture the current frame
         ret, frame = video_capture.read()
         frame = cv2.flip(frame, 1)
         # Create mask
@@ -314,6 +263,7 @@ def main():
 
             # Draw a rectangle when pressing 's' key
             if key == ord('s'):
+                # If it's not on numeric print and it's on "mask" mode
                 if not args['use_numeric_paint'] and not mouse_painting:
                     # If the previous pressed key was not s, create a cache and save the starting point
                     if listkeys[-2] != ord('s'):
@@ -329,6 +279,7 @@ def main():
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
                     if center_mouse is not None:
+                        print(center_mouse)
                         if listmouse[-2] is None:
                             cache = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
@@ -361,55 +312,78 @@ def main():
                             start_point_mouse = center_mouse
                         else:
                             end_point_mouse = center_mouse
-                            radius = int(((start_point_mouse[0] - end_point_mouse[0]) ** 2 + (start_point_mouse[1] - end_point_mouse[1]) ** 2)
-                                         ** (1 / 2))
+                            radius = int(((start_point_mouse[0] - end_point_mouse[0]) ** 2 + (start_point_mouse[1] -
+                                      end_point_mouse[1]) ** 2) ** (1 / 2))
                             blank_image = copy.deepcopy(cache)
                             cv2.circle(blank_image, start_point_mouse, radius, color, radio)
 
-
-        if radio == 0:  # if the thickness of the line is zero the program doesn't draw
+        # If the thickness of the line is zero the program doesn't draw
+        if radio == 0:
             pass
         else:
-            if isdown and mouse_painting and not key == ord('s') and not key == ord('o'):  # Code for when the user is pressing the mouse and to paint with mouse
-                if shake_prevention_on:  # if the user uses the shake prevention
+            # Painting with the mouse, not drawing rectangles or circles
+            if isdown and mouse_painting and not key == ord('s') and not key == ord('o'):
+
+                # If the user uses the shake prevention
+                if shake_prevention_on:
+
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
                             (center_mouse[1] - center_prev_mouse[1]) ** 2))
-                    if distance_mouse > 40:
-                        center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
+
+                    # If the distance is above a certain threshold
+                    if distance_mouse > threshold:
+                        # Defining the center_prev to use in the next cycle
+                        center_prev_mouse = center_mouse
                     else:
-                        # Paint a line according to the inputs
+                        # If the distance is below that threshold, paint a line according to the inputs
                         cv2.line(blank_image, center_prev_mouse, center_mouse, color, radio)
-                        center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
+                        # Defining the center_prev to use in the next cycle
+                        center_prev_mouse = center_mouse
+
+                # If the user does not use the shake prevention mode
                 else:
                     # Paint a line according to the inputs
                     cv2.line(blank_image, center_prev_mouse, center_mouse, color, radio)
-                    center_prev_mouse = center_mouse  # defining the center_prev to use in the next cycle
-            else:  # Code for when the user is not pressing the mouse and painting with the mask
-                if not mouse_painting and not key == ord('s') and not key == ord('o'):
-                    if centroid is None:
-                        pass
-                    else:
-                        # Change the variable centroid to a tuple in center
-                        center = (int(centroid[0]), int(centroid[1]))
+                    # Defining the center_prev to use in the next cycle
+                    center_prev_mouse = center_mouse
 
-                        if shake_prevention_on:  # if the user uses the shake prevention
+            # Painting with the mask, not drawing rectangles or circles
+            elif not mouse_painting and not key == ord('s') and not key == ord('o'):
 
-                            # Calculate the distance between the centroid detected and the previous centroid detected
-                            distance = math.sqrt(((center[0] - center_prev[0]) ** 2) + ((center[1] - center_prev[1]) ** 2))
-                            if distance > 40:  # if the distance is bigger than a defined number, the program doesn't paint
-                                center_prev = center  # defining the center_prev to use in the next cycle
-                            else:
-                                # Paint a line according to the inputs
-                                cv2.line(blank_image, center_prev, center, color, radio)
-                                center_prev = center  # defining the center_prev to use in the next cycle
+                # If no centroid is found, do not draw
+                if centroid is None:
+                    pass
+
+                else:
+                    # Change the variable centroid to a tuple
+                    center = (int(centroid[0]), int(centroid[1]))
+
+                    # If the user uses the shake prevention
+                    if shake_prevention_on:
+
+                        # Calculate the distance between the centroid detected and the previous centroid detected
+                        distance = math.sqrt(((center[0] - center_prev[0]) ** 2) + ((center[1] - center_prev[1]) ** 2))
+
+                        # If the distance is above a certain threshold
+                        if distance > threshold:
+                            # Defining the center_prev to use in the next cycle
+                            center_prev = center
                         else:
                             # Paint a line according to the inputs
                             cv2.line(blank_image, center_prev, center, color, radio)
-                            center_prev = center  # defining the center_prev to use in the next cycle
+                            # Defining the center_prev to use in the next cycle
+                            center_prev = center
+                    else:
+                        # Paint a line according to the inputs
+                        cv2.line(blank_image, center_prev, center, color, radio)
+                        # Defining the center_prev to use in the next cycle
+                        center_prev = center
 
+        # If you are on numeric paint mode
         if args['use_numeric_paint']:
-            # If you press space bar, the program shuts down
+
+            # If you press space bar, the program shuts down and delivers statistics
             if key & 0xFF == ord(' '):
                 print(Fore.BLUE + '\nYou pressed the space bar. Here it is your statistics:' + Style.RESET_ALL)
                 mean_square_error = mse(painted_image, blank_image)
@@ -434,7 +408,7 @@ def main():
                 break
 
 
-        # Changing to real frame
+        # Changing to real frame when "v" is pressed
         if real_toggle:
             # Replacing the white canvas with the real frame
             blend_image = createBlend(blank_image, frame)
