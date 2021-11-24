@@ -8,20 +8,12 @@ from collections import namedtuple
 
 import cv2
 import numpy as np
-from colorama import Fore
 from numpy.random import randint
-import time
 from my_classes import *
-import readchar
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import Terminal256Formatter
 from pprint import pformat
-from skimage.io import imread, imshow
-from skimage.color import rgb2gray
-from skimage.morphology import (erosion, dilation, closing, opening,
-                                area_closing, area_opening)
-from skimage.measure import label, regionprops, regionprops_table
 from skimage.metrics import structural_similarity as ssim
 import matplotlib.pyplot as plt
 
@@ -313,7 +305,7 @@ def compareImages(image_a, image_b):
     plt.show()
 
 
-def drawNumericPaintImage(blank_image):
+def drawNumericPaintImage(blank_image, colour_list):
     """
     Generates a random pattern to colour
     :param blank_image:
@@ -336,11 +328,11 @@ def drawNumericPaintImage(blank_image):
 
     # Start variables
     region_colors = {}
-    colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+    colors = colour_list
 
     # Draw region color idx
     for centroids_coordinates_key, centroid_coordinates_value in centroids_coordinates.items():
-        random_idx = randint(1, 4)
+        random_idx = randint(1, len(colors) + 1)
         region_colors[centroids_coordinates_key] = {}
         region_colors[centroids_coordinates_key]['color_idx'] = random_idx
         region_colors[centroids_coordinates_key]['color'] = colors[random_idx - 1]

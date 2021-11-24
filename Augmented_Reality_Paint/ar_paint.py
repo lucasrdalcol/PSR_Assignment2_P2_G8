@@ -4,28 +4,13 @@
 # Import Modules
 # --------------------------------------------------
 import argparse
-import copy
-import numpy as np
-import cv2
 import json
-import os
-import sys
-from collections import namedtuple
-from pprint import pprint
-from prettyprinter import cpprint
-from time import time, ctime
+from time import ctime
 from colorama import Fore, Back, Style
-from numpy.random import randint
-from my_classes import *
 from my_functions import *
-import readchar
-from statistics import mean
-from prettyprinter import set_default_style
-from prettyprinter import install_extras
-from termcolor import colored, cprint
+from termcolor import cprint
 import math
 from skimage.metrics import structural_similarity as ssim
-from functools import partial
 
 # ---------------------------------------------------
 # Script of a Augmented Reality Paint - Assignment 2 - PSR. Example of similar software here:
@@ -89,6 +74,9 @@ def main():
     threshold = 100
     listkeys = []
     listmouse = []
+    colourlst = [(0, 0, 255), (0, 165, 255), (0, 255, 255), (0, 255, 0), (255, 0, 0), (128, 0, 128)]
+    colourctr = 0
+    rainbow = False
 
     # Initial print
     cprint('Welcome to our Augmented Reality Paint! ENJOY!'
@@ -135,12 +123,14 @@ def main():
                , color='white', on_color='on_blue', attrs=['blink'])
 
         # Generating the numeric picture
-        blank_image, painted_image = drawNumericPaintImage(blank_image=blank_image)
+        blank_image, painted_image = drawNumericPaintImage(blank_image=blank_image, colour_list=colourlst)
         numeric_paint_blank_original = copy.deepcopy(blank_image)
 
         # Print to the user which color should he print in it index
         print('\nColor index 1 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
         print('Color index 2 corresponds to ' + Fore.GREEN + 'green ' + Fore.RESET + 'color.')
+        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
+        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
         print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
         print("\nYou can also check the 'Painted image' to see how it should be like")
         print('Press the space bar to finish and evaluate your painting...\n')
@@ -211,6 +201,34 @@ def main():
                 color = (0, 0, 255)
                 color_str = 'RED'
                 print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                      end='\r')
+
+            # Choose the color yellow if "y" is pressed.
+            elif key == ord('y'):
+                color = (0, 255, 255)
+                color_str = 'YELLOW'
+                print(Fore.YELLOW + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                      end='\r')
+
+            # Choose the color orange if "l" is pressed.
+            elif key == ord('l'):
+                color = (0, 165, 255)
+                color_str = 'ORANGE'
+                print(Fore.YELLOW + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                      end='\r')
+
+            # Choose the color purple if "p" is pressed.
+            elif key == ord('p'):
+                color = (128, 0, 128)
+                color_str = 'PURPLE'
+                print(Fore.MAGENTA + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                      end='\r')
+
+            # Choose the rainbow if "a" is pressed.
+            elif key == ord('a'):
+                rainbow = True
+                print(Fore.RED + 'RA' + Fore.YELLOW + "I" + Fore.GREEN + "N" + Fore.BLUE + "BO" + Fore.MAGENTA + "W" +
+                      ' color selected.                                      ' + Style.RESET_ALL,
                       end='\r')
 
             # Increase the pencil size if "+" is pressed.
@@ -316,6 +334,19 @@ def main():
                                       end_point_mouse[1]) ** 2) ** (1 / 2))
                             blank_image = copy.deepcopy(cache)
                             cv2.circle(blank_image, start_point_mouse, radius, color, radio)
+
+        # Defining the colours of the rainbow
+        if rainbow:
+            color = colourlst[colourctr]
+            print(Fore.RED + 'RA' + Fore.YELLOW + "I" + Fore.GREEN + "N" + Fore.BLUE + "BO" + Fore.MAGENTA + "W" +
+                  ' color selected.                                      ' + Style.RESET_ALL,
+                  end='\r')
+
+            # If the counter has reached the end of the list of colours, resets it
+            if colourctr == len(colourlst) - 1:
+                colourctr = 0
+            else:
+                colourctr += 1
 
         # If the thickness of the line is zero the program doesn't draw
         if radio == 0:
