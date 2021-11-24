@@ -40,6 +40,7 @@ To test this program you need to follow this steps:
 <li> If you want to use the advanced functionality 1, write the following command:</li>
 <li> If you want to use the advanced functionality 4, write the following command:</li>
 </ol>
+
 ## Functionalities
 ### Basic Functionality
 ####
