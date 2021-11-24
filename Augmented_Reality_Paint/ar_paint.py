@@ -127,11 +127,12 @@ def main():
         numeric_paint_blank_original = copy.deepcopy(blank_image)
 
         # Print to the user which color should he print in it index
-        print('\nColor index 1 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
-        print('Color index 2 corresponds to ' + Fore.GREEN + 'green ' + Fore.RESET + 'color.')
-        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
-        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
-        print('Color index 3 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
+        print('\nColor index 1 corresponds to ' + Fore.RED + 'red ' + Fore.RESET + 'color.')
+        print('Color index 2 corresponds to ' + Fore.YELLOW + 'orange ' + Fore.RESET + 'color.')
+        print('Color index 3 corresponds to ' + Fore.LIGHTYELLOW_EX + 'yellow ' + Fore.RESET + 'color.')
+        print('Color index 4 corresponds to ' + Fore.GREEN + 'green ' + Fore.RESET + 'color.')
+        print('Color index 5 corresponds to ' + Fore.BLUE + 'blue ' + Fore.RESET + 'color.')
+        print('Color index 6 corresponds to ' + Fore.MAGENTA + 'purple ' + Fore.RESET + 'color.')
         print("\nYou can also check the 'Painted image' to see how it should be like")
         print('Press the space bar to finish and evaluate your painting...\n')
 
@@ -151,8 +152,27 @@ def main():
     cv2.setMouseCallback("Canvas", onMouse)
 
     # Print
-    print('You started your paint with color ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
-          str(radio) + Fore.RESET + ' as default parameters. \nYou started painting with the mouse. \nPress ' + Fore.RED + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL + ' to paint with the mouse again.\nPress ' + Fore.RED + '"v"' + Style.RESET_ALL + ' to toggle between the white canvas and the real frame.')
+    print('You started your paint with colour ' + Fore.BLUE + color_str + Fore.RESET + ' and pencil size ' + Fore.GREEN +
+          str(radio) + Fore.RESET + ' as default parameters. \nYou started painting with the mouse. \n\nTo change the colour to ' + Fore.RED + 'red' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"r"' + Style.RESET_ALL + '\nTo change the colour to ' + Fore.YELLOW + 'orange' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"l"' + Style.RESET_ALL + '\nTo change the colour to ' + Fore.LIGHTYELLOW_EX + 'yellow' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"y"' + Style.RESET_ALL + '\nTo change the colour to ' + Fore.GREEN + 'green' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"g"' + Style.RESET_ALL + '\nTo change the colour to ' + Fore.BLUE + 'blue' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"b"' + Style.RESET_ALL + '\nTo change the colour to ' + Fore.MAGENTA + 'purple' + Fore.RESET
+          + ' press the letter ' + Fore.RED + '"p"' + Style.RESET_ALL + '\nTo change the colour to ' +
+          Fore.RED + 'RA' + Fore.YELLOW + "I" + Fore.GREEN + "N" + Fore.BLUE + "BO" + Fore.MAGENTA + "W" + Fore.RESET +
+          ' press the letter ' + Fore.RED + '"a"' + Style.RESET_ALL +
+          '\n\nTo increase the pencil size press the key ' + Fore.RED + '"+"' + Style.RESET_ALL +
+          '\nTo decrease the pencil size press the key ' + Fore.RED + '"-"' + Style.RESET_ALL +
+          '\n\nPress ' + Fore.RED
+          + '"n"' + Style.RESET_ALL + ' to paint with the mask. \nPress ' + Fore.RED + '"m"' + Style.RESET_ALL +
+          ' to paint with the mouse. \nPress ' + Fore.RED + '"v"' + Style.RESET_ALL +
+          ' to toggle between the white canvas and the real frame. \nPress ' + Fore.RED + '"w"' + Style.RESET_ALL +
+          ' to save the current canvas to a .png file. \nPress ' + Fore.RED + '"c"' + Style.RESET_ALL +
+          ' to clear the canvas.\n\nPress and hold ' + Fore.RED + '"s"' + Style.RESET_ALL +
+          ' to draw a rectangle \nPress and hold ' + Fore.RED + '"o"' + Style.RESET_ALL + ' to draw a circle.' +
+          '\nWhile painting with the mouse, press and hold the correct key, press the left button of the mouse, drag and drop to '
+          'draw the desired shape.\nWhile painting with the mask, press and hold the correct key to start drawing. To stop, release the key.')
 
     # ---------------------------------------------------
     # Execution
@@ -207,7 +227,7 @@ def main():
             elif key == ord('y'):
                 color = (0, 255, 255)
                 color_str = 'YELLOW'
-                print(Fore.YELLOW + color_str + ' color selected.                                      ' + Style.RESET_ALL,
+                print(Fore.LIGHTYELLOW_EX + color_str + ' color selected.                                      ' + Style.RESET_ALL,
                       end='\r')
 
             # Choose the color orange if "l" is pressed.
