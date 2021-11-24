@@ -3,14 +3,11 @@
 # ---------------------------------------------------
 # Import Modules
 # ---------------------------------------------------
-import argparse
 import json
-import cv2
-import numpy as np
 from functools import partial
 from colorama import Fore, Back, Style
 from my_functions import *
-
+from termcolor import cprint
 
 # ---------------------------------------------------
 # Script of a Augmented Reality Paint - Assignment 2 - PSR. Example of similar software here:
@@ -58,9 +55,12 @@ def main():
 
     # Prints to make the program user friendly. Present to the user the hotkeys
     if capture.isOpened() is True:
-        print(Back.GREEN + 'Start capturing the webcam video.' + Back.RESET)
-        print(Fore.GREEN + 'press w to exit and save the threshold limits' + Fore.RESET)
-        print(Fore.RED + 'press q to exit without saving the threshold limits' + Fore.RESET)
+        cprint('Welcome to the colour segmenter.'
+               , color='white', on_color='on_green', attrs=['blink'])
+        print('\nUse the trackbars to define the threshold limits as you wish.')
+        print(Back.GREEN + '\nStart capturing the webcam video.' + Back.RESET)
+        print(Fore.GREEN + '\nPress "w" to exit and save the threshold limits' + Fore.RESET)
+        print(Fore.RED + 'Press "q" to exit without saving the threshold limits' + Fore.RESET)
     else:
         print(Back.RED + "WARNING!!!" + Back.RESET + Fore.RED + " Can't access the camera" + Fore.RESET)
 
@@ -86,10 +86,10 @@ def main():
 
         # Keyboard inputs to finish the cycle
         if key == ord('q'):
-            print(Fore.RED + 'Letter q (quit) pressed, exiting the program without saving limits' + Fore.RESET)
+            print(Fore.RED + 'Letter "q" (quit) pressed, exiting the program without saving limits' + Fore.RESET)
             break
         elif key == ord('w'):
-            print(Fore.GREEN + 'Letter w (write) pressed, exiting the program and saving limits' + Fore.RESET)
+            print(Fore.GREEN + 'Letter "w" (write) pressed, exiting the program and saving limits' + Fore.RESET)
             file_name = 'limits.json'
             with open(file_name, 'w') as file_handle:
                 print("writing dictionary with threshold limits to file " + file_name)
