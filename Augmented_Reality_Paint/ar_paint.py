@@ -119,6 +119,7 @@ def onMouse(event, x, y, flags, param):
 
     if event == cv2.EVENT_LBUTTONUP:
         isdown = False
+        center_mouse = None
 
 
 def main():
@@ -199,6 +200,7 @@ def main():
     center_prev = (200, 200)
     center_prev_mouse = (200, 200)
     listkeys = []
+    listmouse = []
 
     cv2.imshow("Canvas", blank_image)
 
@@ -234,6 +236,9 @@ def main():
 
         # Append key to list
         listkeys.append(key)
+
+        # Append mouse position to list
+        listmouse.append(center_mouse)
 
         # if a key is pressed
         if key != -1:
@@ -323,29 +328,38 @@ def main():
 
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
-                if not args['use_numeric_paint']:
+                # If used on "mask" mode
+                if not args['use_numeric_paint'] and not mouse_painting:
                     # If the previous pressed key was not o, create a cache and save the starting point
                     if listkeys[-2] != ord('o'):
                         cache = copy.deepcopy(blank_image)
-                        if mouse_painting:
-                            start_point = center_mouse
-                        else:
-                            start_point = (round(centroid[0]), round(centroid[1]))
+                        start_point = (round(centroid[0]), round(centroid[1]))
                     # If the previous pressed keys was an o, draw circle
                     else:
-                        if mouse_painting:
-                            end_point = center_mouse
-                        else:
-                            end_point = (round(centroid[0]), round(centroid[1]))
+                        end_point = (round(centroid[0]), round(centroid[1]))
                         radius = int(((start_point[0] - end_point[0]) ** 2 + (start_point[1] - end_point[1]) ** 2)
                                      ** (1/2))
                         blank_image = copy.deepcopy(cache)
                         cv2.circle(blank_image, start_point, radius, color, radio)
+                # If used on "mouse" mode
+                elif not args['use_numeric_paint'] and mouse_painting:
+                    print(center_mouse)
+                    if center_mouse is not None:
+                        if listmouse[-2] is None:
+                            cache = copy.deepcopy(blank_image)
+                            start_point_mouse = center_mouse
+                        else:
+                            end_point_mouse = (round(centroid[0]), round(centroid[1]))
+                            radius = int(((start_point_mouse[0] - end_point_mouse[0]) ** 2 + (start_point_mouse[1] - end_point_mouse[1]) ** 2)
+                                         ** (1 / 2))
+                            blank_image = copy.deepcopy(cache)
+                            cv2.circle(blank_image, start_point_mouse, radius, color, radio)
+
 
         if radio == 0:  # if the thickness of the line is zero the program doesn't draw
             pass
         else:
-            if isdown and mouse_painting:  # Code for when the user is pressing the mouse and to paint with mouse
+            if isdown and mouse_painting and not key == ord('s') and not key == ord('o'):  # Code for when the user is pressing the mouse and to paint with mouse
                 if shake_prevention_on:  # if the user uses the shake prevention
                     # Calculate the distance between the point of the mouse pressed and the previous point
                     distance_mouse = math.sqrt(((center_mouse[0] - center_prev_mouse[0]) ** 2) + (
