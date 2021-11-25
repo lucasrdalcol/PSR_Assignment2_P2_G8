@@ -169,7 +169,8 @@ def main():
           ' to paint with the mouse. \nPress ' + Fore.RED + '"v"' + Style.RESET_ALL +
           ' to toggle between the white canvas and the real frame. \nPress ' + Fore.RED + '"w"' + Style.RESET_ALL +
           ' to save the current canvas to a .png file. \nPress ' + Fore.RED + '"c"' + Style.RESET_ALL +
-          ' to clear the canvas.\n\nPress and hold ' + Fore.RED + '"s"' + Style.RESET_ALL +
+          ' to clear the canvas. \nPress ' + Fore.RED + '"q"' + Style.RESET_ALL +
+          ' to quit the program.\n\nPress and hold ' + Fore.RED + '"s"' + Style.RESET_ALL +
           ' to draw a rectangle \nPress and hold ' + Fore.RED + '"o"' + Style.RESET_ALL + ' to draw a circle.' +
           '\nWhile painting with the mouse, press and hold the correct key, press the left button of the mouse, drag and drop to '
           'draw the desired shape.\nWhile painting with the mask, press and hold the correct key to start drawing. To stop, release the key.')
@@ -308,7 +309,7 @@ def main():
             # Draw a rectangle when pressing 's' key
             if key == ord('s'):
                 # If it's not on numeric print and it's on "mask" mode
-                if not args['use_numeric_paint'] and not mouse_painting:
+                if not args['use_numeric_paint'] and not mouse_painting and centroid is not None:
                     # If the previous pressed key was not s, create a cache and save the starting point
                     if listkeys[-2] != ord('s'):
                         cache = copy.deepcopy(blank_image)
@@ -334,7 +335,7 @@ def main():
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
                 # If used on "mask" mode
-                if not args['use_numeric_paint'] and not mouse_painting:
+                if not args['use_numeric_paint'] and not mouse_painting  and centroid is not None:
                     # If the previous pressed key was not o, create a cache and save the starting point
                     if listkeys[-2] != ord('o'):
                         cache = copy.deepcopy(blank_image)
@@ -363,9 +364,6 @@ def main():
         # Defining the colours of the rainbow
         if rainbow:
             color = colourlst[colourctr]
-            print(Fore.RED + 'RA' + Fore.YELLOW + "I" + Fore.GREEN + "N" + Fore.BLUE + "BO" + Fore.MAGENTA + "W" +
-                  ' color selected.                                      ' + Style.RESET_ALL,
-                  end='\r')
 
             # If the counter has reached the end of the list of colours, resets it
             if colourctr == len(colourlst) - 1:
