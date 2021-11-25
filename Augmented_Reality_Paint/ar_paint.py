@@ -332,7 +332,6 @@ def main():
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
                     if center_mouse is not None:
-                        print('CM: ' + str(center_mouse))
                         if listmouse[-2] is None:
                             cache_mouse = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
@@ -348,7 +347,7 @@ def main():
             # Draw a circle when pressing 'o' key
             elif key == ord('o'):
                 # If used on "mask" mode
-                if not args['use_numeric_paint'] and not mouse_painting  and centroid is not None:
+                if not args['use_numeric_paint'] and not mouse_painting and centroid is not None:
                     # If the previous pressed key was not o, create a cache and save the starting point
                     if listkeys[-2] != ord('o'):
                         cache = copy.deepcopy(blank_image)
