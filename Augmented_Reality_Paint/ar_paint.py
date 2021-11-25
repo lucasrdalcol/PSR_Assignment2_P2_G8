@@ -77,6 +77,10 @@ def main():
     colourlst = [(0, 0, 255), (0, 165, 255), (0, 255, 255), (0, 255, 0), (255, 0, 0), (128, 0, 128)]
     colourctr = 0
     rainbow = False
+    start_point_mouse = None
+    start_point = None
+    cache = None
+    cache_mouse = None
 
     # Initial print
     cprint('Welcome to our Augmented Reality Paint! ENJOY!'
@@ -317,6 +321,10 @@ def main():
 
                     # If the previous pressed key was an s, draw rectangle
                     else:
+                        if cache is None:
+                            cache = copy.deepcopy(blank_image)
+                        if start_point is None:
+                            start_point = (round(centroid[0]), round(centroid[1]))
                         end_point = (round(centroid[0]), round(centroid[1]))
                         blank_image = copy.deepcopy(cache)
                         cv2.rectangle(blank_image, start_point, end_point, color, radio)
@@ -324,12 +332,17 @@ def main():
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
                     if center_mouse is not None:
+                        print('CM: ' + str(center_mouse))
                         if listmouse[-2] is None:
-                            cache = copy.deepcopy(blank_image)
+                            cache_mouse = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
                         else:
+                            if start_point_mouse is None:
+                                start_point_mouse = center_mouse
+                            if cache_mouse is None:
+                                cache_mouse = copy.deepcopy(blank_image)
                             end_point_mouse = center_mouse
-                            blank_image = copy.deepcopy(cache)
+                            blank_image = copy.deepcopy(cache_mouse)
                             cv2.rectangle(blank_image, start_point_mouse, end_point_mouse, color, radio)
 
             # Draw a circle when pressing 'o' key
