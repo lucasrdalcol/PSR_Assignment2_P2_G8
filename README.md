@@ -14,18 +14,22 @@ in a white canvas. The user can also draw geometric shapes, draw with the mouse 
 ## How to use
 To test this program you need to follow this steps:
 <ol>
-<li> Open a terminal and go to the directory where you created the python files. </li>
+<li> Open a terminal and go to the directory where you created the python files. </li><br>
 <li> Run the program "color_segmenter.py" to choose limits (b, g, r) for the color that you want to detect. After you chose the color, press "w" to save the current limits. Use the following command to run this program: </li>
-<code>./color_segmenter.py</code>
+<code>./color_segmenter.py</code> <br><br>
 <li> Now, run the program "ar_paint.py" to start drawing. For the basic functionality write the following command on the terminal:</li>
-<code>./ar_paint.py -j limits.json</code> <br>
-- While you are running the program, you can interact with the program by pressing the keys shown in the next table:<br>
+<code>./ar_paint.py -j limits.json</code> <br><br>
+- While you are running the program, you can interact with the program by pressing the keys shown in the next table:<br><br>
 
 | Key         | Action                                          |
 | ----------- | -----------                                     |
 | b           | Start painting with the color blue              |
 | g           | Start painting with the color green             |
 | r           | Start painting with the color red               |
+| y           | Start painting with the color yellow            |
+| l           | Start painting with the color orange            |
+| p           | Start painting with the color purple            |
+| a           | Start painting with the color rainbow           |
 | +           | Increase the pencil size                        |
 | -           | Decrease the pencil size                        |
 | c           | Clear the window                                |
@@ -37,10 +41,11 @@ To test this program you need to follow this steps:
 | o           | Draw a circle                                   |
 | q           | Exit the program                                |
 
+<br>
 <li> You can also use two advanced functionalities by using input arguments.<br>
-If you want to use the advanced functionality 1, write the following command: <br>
-<code>./ar_paint.py -j limits.json -usp</code> </li>
-<li> If you want to use the advanced functionality 4, write the following command: <br>
+If you want to use the Shake Prevention, write the following command: <br>
+<code>./ar_paint.py -j limits.json -usp</code> </li><br>
+<li> If you want to use the Numeric Painting, write the following command: <br>
 <code>./ar_paint.py -j limits.json -unp</code> </li>
 </ol>
 
@@ -60,11 +65,11 @@ In this mode the user can:
 #### Default
 The default mode is painting with the mouse, in color blue and with pencil size 5.
 
-### Advanced Functionality 1
+### Advanced Functionalities
 #### Shake Prevention
 Sometimes the color detection might fail and the object detected with the biggest area can oscillate around the area of the window. When this happens the lines are drawn across all the window. <br><br>
 To prevent this from happening, you may use this functionality.
-### Advanced Functionality 4
+
 #### Numeric Painting
 On this functionality, the program divides the window in zones. The user must paint the zones accordingly to the colors atributed to the zones (The colors are atributed randomly by the program). <br><br>
 In the end, the user can make an evaluation of the drawing, by pressing the space bar.
