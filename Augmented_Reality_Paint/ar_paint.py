@@ -354,6 +354,10 @@ def main():
                         start_point = (round(centroid[0]), round(centroid[1]))
                     # If the previous pressed keys was an o, draw circle
                     else:
+                        if cache is None:
+                            cache = copy.deepcopy(blank_image)
+                        if start_point is None:
+                            start_point = (round(centroid[0]), round(centroid[1]))
                         end_point = (round(centroid[0]), round(centroid[1]))
                         radius = int(((start_point[0] - end_point[0]) ** 2 + (start_point[1] - end_point[1]) ** 2)
                                      ** (1/2))
@@ -364,13 +368,17 @@ def main():
                 elif not args['use_numeric_paint'] and mouse_painting:
                     if center_mouse is not None:
                         if listmouse[-2] is None:
-                            cache = copy.deepcopy(blank_image)
+                            cache_mouse = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
                         else:
+                            if start_point_mouse is None:
+                                start_point_mouse = center_mouse
+                            if cache_mouse is None:
+                                cache_mouse = copy.deepcopy(blank_image)
                             end_point_mouse = center_mouse
                             radius = int(((start_point_mouse[0] - end_point_mouse[0]) ** 2 + (start_point_mouse[1] -
                                       end_point_mouse[1]) ** 2) ** (1 / 2))
-                            blank_image = copy.deepcopy(cache)
+                            blank_image = copy.deepcopy(cache_mouse)
                             cv2.circle(blank_image, start_point_mouse, radius, color, radio)
 
         # Defining the colours of the rainbow
