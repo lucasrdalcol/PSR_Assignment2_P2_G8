@@ -59,7 +59,7 @@ def main():
     # Initialization
     # ---------------------------------------------------
     # Starting global variables
-    global numeric_paint_blank_original, painted_image, isdown, center_mouse
+    global numeric_paint_blank_original, painted_image, isdown, center_mouse, cache
 
     # Setting up variables
     real_toggle = False
@@ -204,6 +204,7 @@ def main():
 
             # Choose the color blue if "b" is pressed.
             if key == ord('b'):
+                rainbow = False
                 color = (255, 0, 0)
                 color_str = 'BLUE'
                 print(Fore.BLUE + color_str + ' color selected.                                   ' + Style.RESET_ALL,
@@ -211,6 +212,7 @@ def main():
 
             # Choose the color green if "g" is pressed.
             elif key == ord('g'):
+                rainbow = False
                 color = (0, 255, 0)
                 color_str = 'GREEN'
                 print(Fore.GREEN + color_str + ' color selected.                                ' + Style.RESET_ALL,
@@ -218,6 +220,7 @@ def main():
 
             # Choose the color red if "r" is pressed.
             elif key == ord('r'):
+                rainbow = False
                 color = (0, 0, 255)
                 color_str = 'RED'
                 print(Fore.RED + color_str + ' color selected.                                      ' + Style.RESET_ALL,
@@ -225,6 +228,7 @@ def main():
 
             # Choose the color yellow if "y" is pressed.
             elif key == ord('y'):
+                rainbow = False
                 color = (0, 255, 255)
                 color_str = 'YELLOW'
                 print(Fore.LIGHTYELLOW_EX + color_str + ' color selected.                                      ' + Style.RESET_ALL,
@@ -232,6 +236,7 @@ def main():
 
             # Choose the color orange if "l" is pressed.
             elif key == ord('l'):
+                rainbow = False
                 color = (0, 165, 255)
                 color_str = 'ORANGE'
                 print(Fore.YELLOW + color_str + ' color selected.                                      ' + Style.RESET_ALL,
@@ -239,6 +244,7 @@ def main():
 
             # Choose the color purple if "p" is pressed.
             elif key == ord('p'):
+                rainbow = False
                 color = (128, 0, 128)
                 color_str = 'PURPLE'
                 print(Fore.MAGENTA + color_str + ' color selected.                                      ' + Style.RESET_ALL,
@@ -317,7 +323,6 @@ def main():
                 # If used on "mouse" mode
                 elif not args['use_numeric_paint'] and mouse_painting:
                     if center_mouse is not None:
-                        print(center_mouse)
                         if listmouse[-2] is None:
                             cache = copy.deepcopy(blank_image)
                             start_point_mouse = center_mouse
